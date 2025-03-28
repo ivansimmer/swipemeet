@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "809673304602",
+    "project_id": "swipemeet-ec91e",
+    "storage_bucket": "swipemeet-ec91e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809673304602:android:cfed46287766987844bfa3",
+        "android_client_info": {
+          "package_name": "com.example.swipemeet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCt_n0Jr0n3zvM7JjjPWDxkhhvj0MezU5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
