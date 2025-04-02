@@ -22,9 +22,9 @@ class HomePageWidget extends StatefulWidget {
 class _HomePageWidgetState extends State<HomePageWidget> {
   late HomePageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  int _selectedIndex = 0; 
+  int _selectedIndex = 0;
   PageController _pageController = PageController();
-  int _currentPage = 0; // Indice de la pagina
+  int _currentPage = 0;
   List<Map<String, dynamic>> profiles = [];
 
   @override
@@ -46,10 +46,14 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('users').get();
+        QuerySnapshot snapshot =
+            await FirebaseFirestore.instance.collection('users').get();
         List<Map<String, dynamic>> profilesList = snapshot.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
-            .where((data) => data['email'] != currentUser.email) // Me aseguro de no mostrar el perfil asociado al email que esta logueado
+            .where((data) =>
+                data['email'] !=
+                currentUser
+                    .email) // Me aseguro de no mostrar el perfil asociado al email que esta logueado
             .toList();
         setState(() {
           profiles = profilesList;
@@ -108,7 +112,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     // Por ahora muestro un mensaje, pero a futuro falta implementar
     if (profiles.isNotEmpty && _currentPage < profiles.length) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Conectando con ${profiles[_currentPage]['name']}')),
+        SnackBar(
+            content: Text('Conectando con ${profiles[_currentPage]['name']}')),
       );
     }
   }
@@ -120,15 +125,12 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding( // Titulo header
+            Padding(
+              // Titulo header
               padding: const EdgeInsets.only(top: 30),
               child: Text(
                 'SWIPEMEET',
-                style: FlutterFlowTheme.bodyMedium.copyWith(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFAB82FF),
-                ),
+                style: FlutterFlowTheme.swipeHeader,
               ),
             ),
             Expanded(
@@ -137,14 +139,16 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                   : PageView.builder(
                       controller: _pageController,
                       itemCount: profiles.length,
-                      onPageChanged: (index) => setState(() => _currentPage = index),
+                      onPageChanged: (index) =>
+                          setState(() => _currentPage = index),
                       itemBuilder: (context, index) {
                         return _buildProfileCard(profiles[index]);
                       },
                     ),
             ),
-            Padding( // Contenedor de los botones
-              padding: const EdgeInsets.all(10),
+            Padding(
+              // Contenedor de los botones
+              padding: const EdgeInsets.only(top: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -154,7 +158,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                     iconSize: 30,
                   ),
                   IconButton(
-                    icon: Icon(Icons.link),
+                    icon: Icon(Icons.link), //link y link_off
+                    color: Colors.blueAccent,
                     onPressed: _connect,
                     iconSize: 40,
                   ),
@@ -177,8 +182,34 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   }
 
   Widget _buildProfileCard(Map<String, dynamic> profile) {
-    String defaultImageUrl ='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
-    String imageUrl = profile['pictureUrl'] ?? defaultImageUrl;
+    String defaultImageUrl =
+        'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+    String imageUrl = profile['picture'] ?? defaultImageUrl;
+    String bornDate = profile['born_date'] ?? 'Desconocido';
+    int edad = 0;
+    if (bornDate != 'Desconocido') {
+      // Convertir la fecha en formato 'dd/mm/yyyy' a un formato compatible con DateTime
+      List<String> dateParts = bornDate.split('/');
+      if (dateParts.length == 3) {
+        // Formato 'yyyy-mm-dd' para poder usar DateTime.parse
+        String formattedDate =
+            '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
+        DateTime fechaNacimiento = DateTime.parse(formattedDate);
+
+        // Obtener la fecha actual
+        DateTime fechaActual = DateTime.now();
+
+        // Calcular la diferencia en años
+        edad = fechaActual.year - fechaNacimiento.year;
+
+        // Ajustar si aún no ha cumplido años este año
+        if (fechaActual.month < fechaNacimiento.month ||
+            (fechaActual.month == fechaNacimiento.month &&
+                fechaActual.day < fechaNacimiento.day)) {
+          edad--;
+        }
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
@@ -192,13 +223,18 @@ class _HomePageWidgetState extends State<HomePageWidget> {
               width: 186,
               height: 262,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Image.network(defaultImageUrl, width: 186, height: 262, fit: BoxFit.cover),
+              errorBuilder: (context, error, stackTrace) => Image.network(
+                  defaultImageUrl,
+                  width: 186,
+                  height: 262,
+                  fit: BoxFit.cover),
             ),
           ),
-          Text('${profile['name'] ?? 'Unknown'}, ${profile['born_date'] ?? 'Unknown'}',
-              style: FlutterFlowTheme.bodyMedium.copyWith(fontSize: 25, fontWeight: FontWeight.bold)),
-          Text(profile['university'] ?? 'Unknown'),
-          Text(profile['studies'] ?? 'Implementar intereses'),
+          Padding(padding: const EdgeInsets.symmetric(vertical: 10)),
+          Text('${profile['name'] ?? 'Desconocido'}, ${edad ?? 'Desconocido'}',
+              style: FlutterFlowTheme.homePerfil),
+          Text(profile['university'] ?? 'Desconocido'),
+          Text(profile['studies'] ?? 'Desconocido'),
           Text(profile['location'] ?? 'Implementar ubicacion'),
         ],
       ),

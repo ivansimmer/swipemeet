@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:swipemeet/auth/firebase_auth/auth_check.dart';
 import 'package:swipemeet/flutter_flow/flutter_flow_theme_provider.dart';
 import 'pages/start_page.dart';
 import 'pages/sign_in_page.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ThemeProvider(), // Agrega el ThemeProvider aquí
+      create: (context) => ThemeProvider(),
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp.router(
@@ -45,8 +46,9 @@ class MyApp extends StatelessWidget {
 }
 
 final GoRouter _router = GoRouter(
-  initialLocation: '/startPage',
+  initialLocation: '/',
   routes: [
+    GoRoute(path: '/', builder: (context, state) => AuthCheckWidget()), // Verificador de sesión
     GoRoute(path: '/startPage', name: 'StartPage', builder: (context, state) => const StartPageWidget()),
     GoRoute(path: '/signInPage', name: 'SignInPage', builder: (context, state) => const SignInPageWidget()),
     GoRoute(path: '/logInPage', name: 'LogInPage', builder: (context, state) => const LogInPageWidget()),

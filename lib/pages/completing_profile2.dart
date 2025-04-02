@@ -85,8 +85,8 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
-                    'Your born date is:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Tu fecha de nacimiento es:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 30,
                       letterSpacing: 0.0,
@@ -157,7 +157,7 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                         filled: true,
                         fillColor: FlutterFlowTheme.secondaryBackground,
                       ),
-                      style: FlutterFlowTheme.bodyMedium.copyWith(
+                      style: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
@@ -165,7 +165,7 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                       cursorColor: FlutterFlowTheme.primaryText,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your born date';
+                          return 'Porfavor, intoduce tu fecha de nacimiento';
                         }
                         return null;
                       },
@@ -180,8 +180,8 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(45, 10, 0, 0),
                   child: Text(
-                    'Your age will be public',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Tu edad sera calculada a partir de esta fecha, y aparecera publicamente en Swipemeet',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       color: FlutterFlowTheme.secondaryText,
                       letterSpacing: 0.0,
@@ -197,7 +197,7 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                   onPressed: () async {
                     if (_borndate.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Please enter your born date')),
+                        SnackBar(content: Text('Porfavor introduce tu fecha de nacimiento')),
                       );
                       return;
                     }
@@ -205,7 +205,7 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                     // Paso a la siguiente pagina con GoRoute pasando como parametros el nombre y fecha de nacimiento
                     context.go('/completingProfile3Page/${Uri.encodeComponent(widget.name)}/${Uri.encodeComponent(_borndate)}');
                   },
-                  text: 'CONTINUE',
+                  text: 'CONTINUAR',
                 ),
               ),
             ],

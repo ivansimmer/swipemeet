@@ -22,8 +22,7 @@ class CompletingProfile3Widget extends StatefulWidget {
   static String routePath = '/completingProfile3';
 
   @override
-  State<CompletingProfile3Widget> createState() =>
-      _CompletingProfile3WidgetState();
+  State<CompletingProfile3Widget> createState() => _CompletingProfile3WidgetState();
 }
 
 class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
@@ -38,8 +37,11 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
   @override
   void initState() {
     super.initState();
-    _model =
-        FlutterFlowModel.createModel(context, () => CompletingProfile3Model());
+    _model = FlutterFlowModel.createModel(context, () => CompletingProfile3Model());
+
+    // Inicializa los valores predeterminados para los dropdowns
+    _model.dropDownValue1 = 'Monlau Centre d\'Estudis'; // Valor predeterminado
+    _model.dropDownValue2 = 'CFGS DAM'; // Valor predeterminado
   }
 
   @override
@@ -88,8 +90,8 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text( // Texto subtitulo
-                    'Your student profile:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Tu perfil de estudiante:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 30,
                       letterSpacing: 0.0,
@@ -103,8 +105,8 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
                   child: Text( // Texto escuela
-                    'Where do you study?',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    '¿Donde estudias?',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -120,7 +122,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                       setState(() => _model.dropDownValue1 = val),
                   width: 300,
                   height: 40,
-                  textStyle: FlutterFlowTheme.bodyMedium.copyWith(
+                  textStyle: FlutterFlowTheme.labelMedium.copyWith(
                     fontFamily: 'Inter',
                     letterSpacing: 0.0,
                   ),
@@ -147,8 +149,8 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 60, 0, 0),
                   child: Text( // Texto estudios
-                    'What are you studying?',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    '¿Que estas estudiando?',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -164,7 +166,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                       setState(() => _model.dropDownValue2 = val),
                   width: 300,
                   height: 40,
-                  textStyle: FlutterFlowTheme.bodyMedium.copyWith(
+                  textStyle: FlutterFlowTheme.labelMedium.copyWith(
                     fontFamily: 'Inter',
                     letterSpacing: 0.0,
                   ),
@@ -218,7 +220,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                           content: Text('Error: Usuario no autenticado')));
                     }
                   },
-                  text: 'CONTINUE',
+                  text: 'CONTINUAR',
                 ),
               ),
             ],

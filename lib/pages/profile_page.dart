@@ -25,6 +25,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
   late ProfilePageModel _model;
   String email = "";
   String name = "";
+  String picture = "";
   late bool isLoading;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -55,25 +56,28 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
           setState(() {
             email = userDoc['email'] ?? '';
             name = userDoc['name'] ?? '';
+            picture = userDoc['picture'] ?? '';
             isLoading = false; // Finaliza la carga
           });
         } else {
           setState(() {
-            email = 'No email found';
-            name = 'No name found';
+            email = 'No se ha encontrado ningun email';
+            name = 'No se ha encontrado ningun nombre';
+            picture = 'No se ha encontrado ningun imagen';
             isLoading = false;
           });
         }
       } catch (e) {
         setState(() {
-          email = 'Error loading email';
-          name = 'Error loading name';
+          email = 'Error cargando email';
+          name = 'Error cargando name';
+          name = 'Error cargando picture';
           isLoading = false;
         });
       }
     } else {
       setState(() {
-        email = 'User not authenticated';
+        email = 'Usuario no autenticado';
         isLoading = false;
       });
     }
@@ -117,16 +121,16 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
       theme: themeProvider.themeData, // Aplicar el tema según la preferencia
       home: Scaffold(
         key: scaffoldKey,
-        appBar: AppBar(
-          title: Text(
-            'Profile',
-            style: FlutterFlowTheme.headlineSmall,
-          ),
-          elevation: 0,
-        ),
         body: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
+            Padding( // Titulo header
+              padding: const EdgeInsets.only(top: 70, bottom: 30),
+              child: Text(
+                'SWIPEMEET',
+                style: FlutterFlowTheme.swipeHeader,
+              ),
+            ),
             // Contenido del perfil
             Row(
               mainAxisSize: MainAxisSize.max,
@@ -137,7 +141,9 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                     boxShadow: [
                       BoxShadow(
                         blurRadius: 1,
-                        color: FlutterFlowTheme.primaryBackground,
+                        color: themeProvider.isDarkMode
+                          ? Color.fromRGBO(19, 18, 18, 1)
+                          : Colors.white,
                         offset: Offset(0.0, 0),
                       ),
                     ],
@@ -158,8 +164,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                             padding: EdgeInsets.all(2),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
-                              child: Image.network(
-                                'https://images.unsplash.com/photo-1592520113018-180c8bc831c9?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTI3fHxwcm9maWxlfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=900&q=60',
+                              child: Image.network(picture,
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.cover,
@@ -174,7 +179,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                name.isEmpty ? 'Loading...' : name,
+                                name.isEmpty ? 'Cargando...' : name,
                                 style: FlutterFlowTheme.headlineSmall.copyWith(
                                   fontFamily: 'Inter Tight',
                                   letterSpacing: 0.0,
@@ -184,7 +189,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                 padding:
                                     EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
                                 child: Text(
-                                  email.isEmpty ? 'Loading...' : email,
+                                  email.isEmpty ? 'Cargando...' : email,
                                   style:
                                       FlutterFlowTheme.headlineSmall.copyWith(
                                     fontFamily: 'Outfit',
@@ -229,8 +234,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Switch to Light Mode',
-                                  style: FlutterFlowTheme.bodyMedium),
+                              Text('Cambiar a Modo Claro',
+                                  style: FlutterFlowTheme.optionsProfile),
                               Container(
                                 width: 80,
                                 height: 40,
@@ -304,8 +309,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Switch to Dark Mode',
-                                  style: FlutterFlowTheme.bodyMedium),
+                              Text('Cambiar a Modo Oscuro',
+                                  style: FlutterFlowTheme.optionsProfile),
                               Container(
                                 width: 80,
                                 height: 40,
@@ -372,8 +377,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                   children: [
                     Padding(
                       padding: EdgeInsetsDirectional.fromSTEB(24, 12, 0, 12),
-                      child: Text('Account Settings',
-                          style: FlutterFlowTheme.bodyMedium),
+                      child: Text('Ajustes de la cuenta',
+                          style: FlutterFlowTheme.optionsProfile),
                     ),
                   ],
                 ),
@@ -391,8 +396,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                     height: 60,
                     decoration: BoxDecoration(
                       color: themeProvider.isDarkMode
-                          ? FlutterFlowTheme.secondaryBackground
-                          : FlutterFlowTheme.primaryBackground,
+                          ? Colors.black
+                          : Colors.white,
                       boxShadow: [
                         BoxShadow(
                           blurRadius: 5,
@@ -410,18 +415,14 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                         children: [
                           Icon(
                             Icons.edit_outlined,
-                            color: FlutterFlowTheme.secondaryText,
                             size: 20,
                           ),
                           Padding(
                             padding:
                                 EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
                             child: Text(
-                              'Edit Profile',
-                              style: FlutterFlowTheme.bodyMedium.copyWith(
-                                fontFamily: 'Inter',
-                                letterSpacing: 0.0,
-                              ),
+                              'Editar Perfil',
+                              style: FlutterFlowTheme.optionsProfile,
                             ),
                           ),
                         ],
@@ -430,52 +431,56 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                   ),
                 ),
 
-                // Cambiar contraseña
+                // Cambiar intereses
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(20, 10, 20, 0),
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: themeProvider.isDarkMode
-                          ? FlutterFlowTheme.secondaryBackground
-                          : FlutterFlowTheme.primaryBackground,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5,
-                          color: Color(0x3416202A),
-                          offset: Offset(0.0, 2),
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(12),
-                      shape: BoxShape.rectangle,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Icon(
-                            Icons.key_outlined,
-                            color: FlutterFlowTheme.secondaryText,
-                            size: 20,
-                          ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
-                            child: Text(
-                              'Change Password',
-                              style: FlutterFlowTheme.bodyMedium.copyWith(
-                                fontFamily: 'Inter',
-                                letterSpacing: 0.0,
-                              ),
-                            ),
+                  child: InkWell(
+                    onTap: () {
+                      // Navegar hacia la página ChangePassPage
+                      //context.goNamed(
+                          //'PassPage'); // Asegúrate de registrar esta ruta en tu enrutador
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: themeProvider.isDarkMode
+                            ? Colors.black
+                            : Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 5,
+                            color: Color(0x3416202A),
+                            offset: Offset(0.0, 2),
                           ),
                         ],
+                        borderRadius: BorderRadius.circular(12),
+                        shape: BoxShape.rectangle,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Icon(
+                              Icons.interests_outlined,
+                              size: 20,
+                            ),
+                            Padding(
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
+                              child: Text(
+                                'Cambiar Intereses',
+                                style: FlutterFlowTheme.optionsProfile,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 // Botón "Log Out"
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(20, 40, 20, 0),
@@ -484,7 +489,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                       await FirebaseAuth.instance.signOut();
                       context.goNamed('StartPage');
                     },
-                    text: 'Log Out',
+                    text: 'Cerrar Sesion',
+                    height: 50,
+                    color: Color(0xFFAB82FF),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
               ],
@@ -497,7 +505,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
           items: [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
-              label: 'Home',
+              label: 'Inicio',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.chat),
@@ -505,7 +513,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              label: 'Profile',
+              label: 'Perfil',
             ),
           ],
         ),

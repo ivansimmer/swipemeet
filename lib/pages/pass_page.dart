@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
-
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -37,7 +36,6 @@ class _PassWidgetState extends State<PassWidget> {
   @override
   void dispose() {
     _model.dispose();
-
     super.dispose();
   }
 
@@ -50,33 +48,21 @@ class _PassWidgetState extends State<PassWidget> {
         backgroundColor: FlutterFlowTheme.primaryBackground,
         automaticallyImplyLeading: false,
         leading: Container(
-          width: 60, // Set button size
-          height: 60, // Set button size
+          width: 60,
+          height: 60,
           decoration: BoxDecoration(
-            color: Colors
-                .transparent, // Optional: Set background color if you need one
-            borderRadius: BorderRadius.circular(30), // Border radius
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: Colors.transparent, // Set the border color if needed
-              width: 1, // Border width
+              color: Colors.transparent,
+              width: 1,
             ),
           ),
           child: FlutterFlowIconButton(
             icon: Icons.arrow_back_rounded,
             onPressed: () async {
-              Navigator.pop(context);
+              context.goNamed('LogInPage');
             },
-          ),
-        ),
-        title: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(4, 0, 0, 0),
-          child: Text(
-            'Back',
-            style: FlutterFlowTheme.headlineSmall.copyWith(
-              fontFamily: 'Inter Tight',
-              fontSize: 16,
-              letterSpacing: 0.0,
-            ),
           ),
         ),
         actions: [],
@@ -95,61 +81,17 @@ class _PassWidgetState extends State<PassWidget> {
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // This row exists for when the "app bar" is hidden on desktop, having a way back for the user can work well.
-              if (FlutterFlowUtil.responsiveVisibility(
-                context: context,
-                phone: false,
-                tablet: false,
-              ))
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () async {
-                      Navigator.pop(context);
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(0, 12, 0, 12),
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: FlutterFlowTheme.primaryText,
-                            size: 24,
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(12, 0, 0, 0),
-                          child: Text(
-                            'Back',
-                            style: FlutterFlowTheme.bodyMedium.copyWith(
-                              fontFamily: 'Inter',
-                              letterSpacing: 0.0,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
+                padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
                 child: Text(
-                  'Forgot Password',
-                  style: FlutterFlowTheme.headlineSmall.copyWith(
-                    fontFamily: 'Inter Tight',
-                    letterSpacing: 0.0,
-                  ),
+                  'Olvidé mi contraseña',
+                  style: FlutterFlowTheme.tituloPages
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16, 4, 16, 4),
+                padding: EdgeInsetsDirectional.fromSTEB(32, 20, 32, 10),
                 child: Text(
-                  'We will send you an email with a link to reset your password, please enter the email associated with your account below.',
+                  'Te enviaremos un correo con un link con el que podras restablecer tu contraseña. Por favor, introduce el correo asociado con tu cuenta.',
                   style: FlutterFlowTheme.labelMedium.copyWith(
                     fontFamily: 'Inter',
                     letterSpacing: 0.0,
@@ -157,7 +99,7 @@ class _PassWidgetState extends State<PassWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+                padding: EdgeInsetsDirectional.fromSTEB(32, 12, 32, 0),
                 child: Container(
                   width: double.infinity,
                   child: TextFormField(
@@ -166,16 +108,13 @@ class _PassWidgetState extends State<PassWidget> {
                     autofillHints: [AutofillHints.email],
                     obscureText: false,
                     decoration: InputDecoration(
-                      labelText: 'Your email address...',
+                      labelText: 'Tu direccion de correo...',
                       labelStyle: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'Enter your email...',
-                      hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        letterSpacing: 0.0,
-                      ),
+                      hintText: 'Introduce el correo aqui...',
+                      hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: FlutterFlowTheme.alternate,
@@ -209,7 +148,7 @@ class _PassWidgetState extends State<PassWidget> {
                       contentPadding:
                           EdgeInsetsDirectional.fromSTEB(24, 24, 20, 24),
                     ),
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -218,7 +157,7 @@ class _PassWidgetState extends State<PassWidget> {
                     cursorColor: FlutterFlowTheme.primary,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a valid email';
+                        return 'Por favor introduce un correo valido';
                       }
                       return null;
                     },
@@ -235,7 +174,7 @@ class _PassWidgetState extends State<PassWidget> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Email required!',
+                              'El correo es necesario!',
                             ),
                           ),
                         );
@@ -247,10 +186,12 @@ class _PassWidgetState extends State<PassWidget> {
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Password reset link sent!'),
+                            content: Text('Link para restablecer la contraseña enviado!'),
                           ),
                         );
-                        Navigator.pop(context);
+                        // Mostrar un AlertDialog o SnackBar, luego redirigir a la página de inicio de sesión.
+                        await Future.delayed(Duration(seconds: 2));  // Esperar 2 segundos
+                        context.goNamed('LogInPage');  // Redirigir a la página de login
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -259,11 +200,12 @@ class _PassWidgetState extends State<PassWidget> {
                         );
                       }
                     },
-                    text: 'Send Link',
-                    color: FlutterFlowTheme.primary,
+                    text: 'Enviar Link',
+                    color: Color(0xFFAB82FF),
                     height: 50,
                     width: 270,
                     elevation: 3,
+                    borderRadius: BorderRadius.circular(25),
                     padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                     iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                   ),

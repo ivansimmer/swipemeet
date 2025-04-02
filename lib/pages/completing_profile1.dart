@@ -78,8 +78,8 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(50, 50, 0, 0),
                   child: Text(
-                    'Your name is:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Tu nombre es:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 32,
                       letterSpacing: 0.0,
@@ -110,7 +110,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                         fontSize: 16,
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'Enter your name here...',
+                      hintText: 'Introduce tu nombre aqui...',
                       hintStyle: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         fontSize: 16,
@@ -147,7 +147,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                       filled: true,
                       fillColor: FlutterFlowTheme.secondaryBackground,
                     ),
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 16,
                       letterSpacing: 0.0,
@@ -155,7 +155,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                     cursorColor: FlutterFlowTheme.primaryText,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
+                        return 'Porfavor introduce tu nombre';
                       }
                       return null;
                     },
@@ -169,8 +169,8 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 10, 30, 0),
                   child: Text(
-                    'This is how it will appear in Swipemeet and you will not be able to change it',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Asi es como apareceras en Swipemeet, y no podras cambiarlo mas tarde',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 12,
                       letterSpacing: 0.0,
@@ -187,7 +187,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                     // Uso GoRoute para navegar a la siguiente pagina pasando el nombre como parametro
                     context.go('/completingProfile2Page/$_name');
                   },
-                  text: 'CONTINUE',
+                  text: 'CONTINUAR',
                 ),
               ),
             ],

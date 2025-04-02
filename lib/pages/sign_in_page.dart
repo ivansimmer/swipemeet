@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:swipemeet/flutter_flow/flutter_flow_icon_button.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
 import 'package:swipemeet/pages/sing_in_page_model.dart';
 
@@ -47,6 +48,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
     super.dispose();
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -62,26 +64,31 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              Align(
-                alignment: AlignmentDirectional(-1, -1),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
-                  child: Text(
-                    'Sign - in',
-                    style: FlutterFlowTheme.headlineSmall.copyWith(
-                      fontFamily: 'Inter Tight',
-                      letterSpacing: 0.0,
+              Row(children: [
+                FlutterFlowIconButton(
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () async {
+                    context.goNamed('StartPage');
+                  },
+                ),
+                Align(
+                  alignment: AlignmentDirectional(-1, -1),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                    child: Text(
+                      'Crea tu cuenta',
+                      style: FlutterFlowTheme.tituloPages
                     ),
                   ),
                 ),
-              ),
+              ]),
               Align(
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
                   child: Text(
-                    'Enter your email:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Introduce tu correo:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -106,11 +113,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                           letterSpacing: 0.0,
                         ),
                         alignLabelWithHint: false,
-                        hintText: 'exampleemail@gmail.com',
-                        hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                          fontFamily: 'Inter',
-                          letterSpacing: 0.0,
-                        ),
+                        hintText: 'emailejemplo@gmail.com',
+                        hintStyle: FlutterFlowTheme.introHints,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Color(0x00000000),
@@ -142,7 +146,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         filled: true,
                         fillColor: FlutterFlowTheme.secondaryBackground,
                       ),
-                      style: FlutterFlowTheme.bodyMedium.copyWith(
+                      style: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
@@ -150,7 +154,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                       cursorColor: FlutterFlowTheme.primaryText,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an email';
+                          return 'Por favor, introduce un correo';
                         }
                         return null;
                       },
@@ -163,8 +167,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
-                    'Enter your password:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Introduce tu contraseña:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -186,11 +190,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'password',
-                      hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        letterSpacing: 0.0,
-                      ),
+                      hintText: 'contraseña',
+                      hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Color(0x00000000),
@@ -235,14 +236,14 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         ),
                       ),
                     ),
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
                     cursorColor: FlutterFlowTheme.primaryText,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return 'Por favor, introduce una contraseña';
                       }
                       return null;
                     },
@@ -254,8 +255,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
-                    'Confirm your password:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Confirma tu contraseña:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -277,11 +278,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'password',
-                      hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        letterSpacing: 0.0,
-                      ),
+                      hintText: 'contraseña',
+                      hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Color(0x00000000),
@@ -326,28 +324,17 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         ),
                       ),
                     ),
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
                     cursorColor: FlutterFlowTheme.primaryText,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return 'Por favor, confirma tu contraseña';
                       }
                       return null;
                     },
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 100, 0, 0),
-                child: Text(
-                  'We will send a text with a verification code.\nMessage and data rates may apply. Learn what\nhappens when your number changes.',
-                  style: FlutterFlowTheme.bodyMedium.copyWith(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    letterSpacing: 0.0,
                   ),
                 ),
               ),
@@ -360,7 +347,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                           _model.textFieldConfirmTextController?.text) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Passwords don\'t match!'),
+                            content: Text('¡Las contraseñas no coinciden!'),
                           ),
                         );
                         return;
@@ -371,7 +358,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         final userCredential = await FirebaseAuth.instance
                             .createUserWithEmailAndPassword(
                           email: _model.textFieldEmailTextController!.text,
-                          password: _model.textFieldPasswordTextController!.text,
+                          password:
+                              _model.textFieldPasswordTextController!.text,
                         );
 
                         // You can access the user using userCredential.user
@@ -383,19 +371,19 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text('Failed to create account.')),
+                                content: Text('Error al crear la cuenta.')),
                           );
                         }
                       } catch (e) {
                         // Handle any errors from Firebase (e.g. network issues, invalid email format)
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error creating account: $e'),
+                            content: Text('Error creando la cuenta: $e'),
                           ),
                         );
                       }
                     },
-                    text: 'CONTINUE',
+                    text: 'CONTINUAR',
                     width: 300, // width of the button
                     height: 40, // height of the button
                     padding: EdgeInsetsDirectional.fromSTEB(
@@ -405,8 +393,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                     color: Color(0xFFAB82FF), // background color of the button
                     elevation: 0, // elevation of the button
                     borderRadius: BorderRadius.circular(20), // border radius
-                  )
-                ),
+                  )),
             ],
           ),
         ),

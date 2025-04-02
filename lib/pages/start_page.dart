@@ -38,93 +38,100 @@ class _StartPageWidgetState extends State<StartPageWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: Color(0xFFAB82FF),
-        body: SafeArea(
-          top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 150, 0, 0),
-                  child: Text(
-                    'SWIPEMEET',
-                    style: FlutterFlowTheme.titleText,
-                  ),
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: Scaffold(
+          key: scaffoldKey,
+          body: SafeArea(
+            top: true,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFAB82FF), Color(0xFFFF42B3)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
-              Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(50, 200, 50, 0),
-                  child: Text(
-                    'By tapping Sign In or Log In, you agree to our Terms. Learn how we process your data in our Privacy Policy and Cookies Policy.',
-                    textAlign: TextAlign.start,
-                    style: FlutterFlowTheme.labelSmall.copyWith(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Align(
+                    alignment: AlignmentDirectional(0, 0),
+                    child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 150, 0, 0),
+                        child: Image.asset('assets/logo.png')),
+                  ),
+                  Align(
+                    alignment: AlignmentDirectional(0, 0),
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(50, 50, 50, 0),
+                      child: Text(
+                        'Clicando Crear Cuenta o Iniciar Sesion aceptas nuestras condiciones. Comprueba como procesamos tu informacion en nuestra Politica de Privacidad.',
+                        textAlign: TextAlign.start,
+                        style: FlutterFlowTheme.labelSmall.copyWith(
                           fontFamily: 'Inter',
                           color: Colors.white,
                           letterSpacing: 0.0,
                         ),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      context.goNamed('SignInPage');
-                    },
-                    child: Text(
-                      'SIGN IN WITH EMAIL',
-                      style: FlutterFlowTheme.buttonText,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFAB82FF), // button color
-                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24.0),
-                        side: BorderSide(color: FlutterFlowTheme.borderButton, width: 1)
                       ),
                     ),
                   ),
-                ),
-              ),
-              Align(
-                alignment: AlignmentDirectional(0, 0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      context.goNamed('LogInPage');
-                    },
-                    child: Text(
-                      'LOG IN WITH EMAIL',
-                      style: FlutterFlowTheme.buttonText,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFAB82FF), // button color
-                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24.0),
-                        side: BorderSide(color: FlutterFlowTheme.borderButton, width: 1)
+                  Align(
+                    alignment: AlignmentDirectional(0, 0),
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          context.goNamed('SignInPage');
+                        },
+                        child: Text(
+                          'CREAR CUENTA',
+                          style: FlutterFlowTheme.buttonText,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFAB82FF), // button color
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 12.0),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24.0),
+                              side: BorderSide(
+                                  color: FlutterFlowTheme.borderButton,
+                                  width: 1)),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  Align(
+                    alignment: AlignmentDirectional(0, 0),
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          context.goNamed('LogInPage');
+                        },
+                        child: Text(
+                          'INICIAR SESION',
+                          style: FlutterFlowTheme.buttonText,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFAB82FF), // button color
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 12.0),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24.0),
+                              side: BorderSide(
+                                  color: FlutterFlowTheme.borderButton,
+                                  width: 1)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }

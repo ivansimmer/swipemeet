@@ -61,7 +61,7 @@ class _VerificationPageWidgetState extends State<VerificationPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
                   child: Text(
                     'My code is:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 34,
                       letterSpacing: 0.0,
@@ -88,7 +88,7 @@ class _VerificationPageWidgetState extends State<VerificationPageWidget> {
                           letterSpacing: 0.0,
                         ),
                         hintText: '\n',
-                        hintStyle: FlutterFlowTheme.bodyMedium.copyWith(
+                        hintStyle: FlutterFlowTheme.labelMedium.copyWith(
                           fontFamily: 'Inter',
                           letterSpacing: 0.0,
                         ),
@@ -123,7 +123,7 @@ class _VerificationPageWidgetState extends State<VerificationPageWidget> {
                         filled: true,
                         fillColor: FlutterFlowTheme.secondaryBackground,
                       ),
-                      style: FlutterFlowTheme.bodyMedium.copyWith(
+                      style: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         color: Color(0xFF7D8183),
                         fontSize: 30,
@@ -147,7 +147,7 @@ class _VerificationPageWidgetState extends State<VerificationPageWidget> {
                   onPressed: () {
                     print('Button pressed ...');
                   },
-                  text: 'CONTINUE',
+                  text: 'CONTINUAR',
                   width: 300,
                   height: 40,
                   padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
