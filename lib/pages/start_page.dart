@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
 
@@ -60,7 +61,7 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                   Align(
                     alignment: AlignmentDirectional(0, 0),
                     child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 150, 0, 0),
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 200, 0, 0),
                         child: Image.asset('assets/logo.png')),
                   ),
                   Align(
@@ -84,7 +85,9 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                       padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
                       child: ElevatedButton(
                         onPressed: () async {
-                          context.goNamed('SignInPage');
+                          context.goNamed(
+                            'SignInPage',
+                          );
                         },
                         child: Text(
                           'CREAR CUENTA',
@@ -109,7 +112,9 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                       padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
                       child: ElevatedButton(
                         onPressed: () async {
-                          context.goNamed('LogInPage');
+                          context.goNamed(
+                            'LogInPage',
+                          );
                         },
                         child: Text(
                           'INICIAR SESION',

@@ -4,6 +4,8 @@ class UserProfile {
   String bornDate;
   String university;
   String studies;
+  String ubicacion;
+  List<String> intereses;
   String pictureUrl;
 
   // Constructor
@@ -13,6 +15,8 @@ class UserProfile {
     required this.bornDate,
     required this.university,
     required this.studies,
+    required this.ubicacion,
+    required this.intereses,
     this.pictureUrl = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png', // Imagen por defecto
   });
 
@@ -24,6 +28,8 @@ class UserProfile {
       'born_date': bornDate,
       'university': university,
       'studies': studies,
+      'ubicacion': ubicacion,
+      'intereses': intereses,
       'picture': pictureUrl,
     };
   }
@@ -36,6 +42,8 @@ class UserProfile {
       bornDate: map['born_date'],
       university: map['university'],
       studies: map['studies'],
+      ubicacion: map['ubicacion'],
+      intereses: map['intereses'],
       pictureUrl: map['picture'],
     );
   }

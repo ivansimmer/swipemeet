@@ -48,7 +48,6 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
     super.dispose();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -57,6 +56,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
@@ -75,10 +75,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                   alignment: AlignmentDirectional(-1, -1),
                   child: Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
-                    child: Text(
-                      'Crea tu cuenta',
-                      style: FlutterFlowTheme.tituloPages
-                    ),
+                    child: Text('Crea tu cuenta',
+                        style: FlutterFlowTheme.tituloPages),
                   ),
                 ),
               ]),
@@ -100,7 +98,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                   child: Container(
-                    width: 300,
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // width of the button
                     child: TextFormField(
                       controller: _model.textFieldEmailTextController,
                       focusNode: _model.textFieldEmailFocusNode,
@@ -178,7 +177,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: 300,
+                  width: MediaQuery.of(context).size.width *
+                      0.7, // width of the button
                   child: TextFormField(
                     controller: _model.textFieldPasswordTextController,
                     focusNode: _model.textFieldPasswordFocusNode,
@@ -266,7 +266,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: 300,
+                  width: MediaQuery.of(context).size.width *
+                      0.7, // width of the button
                   child: TextFormField(
                     controller: _model.textFieldConfirmTextController,
                     focusNode: _model.textFieldConfirmFocusNode,
@@ -339,60 +340,142 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
                   child: FlutterFlowButton(
                     onPressed: () async {
-                      // Check if passwords match
+                      final List<String> dominiosPermitidos = [
+                        '@campus.monlau.com',
+                        '@gmail.com',
+                        // Agrega más dominios aquí si quieres
+                      ];
+
+                      // Función para obtener un mensaje personalizado del error de Firebase
+                      String getFirebaseErrorMessage(String code) {
+                        switch (code) {
+                          case 'email-already-in-use':
+                            return 'Este correo ya está en uso. Intenta con otro.';
+                          case 'invalid-email':
+                            return 'El correo no es válido.';
+                          case 'weak-password':
+                            return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+                          case 'operation-not-allowed':
+                            return 'Esta operación no está permitida. Contacta al soporte.';
+                          default:
+                            return 'Rellena todos los campos correctamente.';
+                        }
+                      }
+
+                      // Validar que las contraseñas coincidan
                       if (_model.textFieldPasswordTextController?.text !=
                           _model.textFieldConfirmTextController?.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error'),
                             content: Text('¡Las contraseñas no coinciden!'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Normalizar correo
+                      final email = _model.textFieldEmailTextController!.text
+                          .trim()
+                          .toLowerCase();
+
+                      // Validar dominio permitido
+                      bool emailPermitido = dominiosPermitidos.any(
+                        (dominio) => email.endsWith(dominio.toLowerCase()),
+                      );
+
+                      if (!emailPermitido) {
+                        debugPrint(
+                            'Correo no permitido, cancelando creación de cuenta');
+
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Correo no permitido'),
+                            content: Text(
+                                'Solo se permiten correos con dominios autorizados.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
                           ),
                         );
                         return;
                       }
 
                       try {
-                        // Firebase Authentication: Create account with email and password
                         final userCredential = await FirebaseAuth.instance
                             .createUserWithEmailAndPassword(
-                          email: _model.textFieldEmailTextController!.text,
+                          email: email,
                           password:
                               _model.textFieldPasswordTextController!.text,
                         );
 
-                        // You can access the user using userCredential.user
                         final user = userCredential.user;
 
                         if (user != null) {
-                          // Account successfully created, navigate to the next page
                           context.goNamed('CompletingProfile1Page');
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('Error al crear la cuenta.')),
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Error al crear cuenta'),
+                              content: Text(
+                                  'No se pudo crear la cuenta. Intenta nuevamente.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('OK'),
+                                ),
+                              ],
+                            ),
                           );
                         }
                       } catch (e) {
-                        // Handle any errors from Firebase (e.g. network issues, invalid email format)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error creando la cuenta: $e'),
+                        String errorMsg = 'Ocurrió un error.';
+                        if (e is FirebaseAuthException) {
+                          errorMsg = getFirebaseErrorMessage(e.code);
+                        }
+
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error al crear cuenta'),
+                            content: Text(errorMsg),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
                           ),
                         );
                       }
                     },
                     text: 'CONTINUAR',
-                    width: 300, // width of the button
-                    height: 40, // height of the button
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // width of the button
+                    height: MediaQuery.of(context).size.height *
+                        0.07, // height of the button
                     padding: EdgeInsetsDirectional.fromSTEB(
                         16, 0, 16, 0), // padding inside the button
                     iconPadding: EdgeInsetsDirectional.fromSTEB(
                         0, 0, 0, 0), // icon padding
                     color: Color(0xFFAB82FF), // background color of the button
                     elevation: 0, // elevation of the button
-                    borderRadius: BorderRadius.circular(20), // border radius
+                    borderRadius: BorderRadius.circular(25), // border radius
                   )),
             ],
           ),

@@ -7,10 +7,11 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 
 class LogInPageWidget extends StatefulWidget {
+
   const LogInPageWidget({super.key});
 
   static String routeName = 'LogInPage';
-  static String routePath = '/logInPage';
+  static String routePath = '/logInPage/:ubicacion';
 
   @override
   State<LogInPageWidget> createState() => _LogInPageWidgetState();
@@ -58,14 +59,14 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              Row(
-                children: [
+              Row(children: [
                 FlutterFlowIconButton(
                   icon: Icons.arrow_back_rounded,
                   onPressed: () async {
@@ -101,7 +102,8 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                   child: Container(
-                    width: 300,
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // width of the button
                     child: TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -133,7 +135,8 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                 // Input de la contraseña
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: 300,
+                  width: MediaQuery.of(context).size.width *
+                      0.7, // width of the button
                   child: TextFormField(
                     controller: _passwordController,
                     obscureText: !_passwordVisibility,
@@ -169,8 +172,10 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                         'PassPage'); // Asegúrate de registrar esta ruta en tu enrutador
                   },
                   child: Container(
-                    width: 200,
-                    height: 40,
+                    width: MediaQuery.of(context).size.width *
+                        0.5, // width of the button
+                    height: MediaQuery.of(context).size.height *
+                        0.06, // width of the button
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 204, 204, 204),
                       boxShadow: [
@@ -253,23 +258,67 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                       );
                     } else {
                       // Muestro error si el login no es exitoso
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Inicio de sesion fallido. Prueba otra vez.')),
-                      );
+                      if (email.isEmpty) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error'),
+                            content: Text(
+                                'El campo email no puede estar vacio. Introduce tu correo.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (password.isEmpty) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error'),
+                            content: Text(
+                                'El campo contraseña no puede estar vacio. Introduce tu contraseña.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error'),
+                            content: Text(
+                                'Inicio de sesion fallido. Prueba otra vez.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     }
                   },
                   text: 'CONTINUAR',
                   color: Color(0xFFAB82FF), // Color del boton
-                  width: 300, // Ancho del boton
-                  height: 40, // Altura del boton
+                  width: MediaQuery.of(context).size.width *
+                      0.7, // width of the button
+                  height: MediaQuery.of(context).size.height *
+                      0.07, // width of the button
                   padding: EdgeInsetsDirectional.fromSTEB(
                       16, 0, 16, 0), // Margen interior
                   iconPadding: EdgeInsetsDirectional.fromSTEB(
                       0, 0, 0, 0), // Margen del icono
                   elevation: 0, // Elevacion del boton
                   borderRadius:
-                      BorderRadius.circular(20), // Esquinas redondeadas
+                      BorderRadius.circular(25), // Esquinas redondeadas
                 ),
               ),
             ],

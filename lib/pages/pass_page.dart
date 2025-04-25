@@ -109,10 +109,6 @@ class _PassWidgetState extends State<PassWidget> {
                     obscureText: false,
                     decoration: InputDecoration(
                       labelText: 'Tu direccion de correo...',
-                      labelStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        letterSpacing: 0.0,
-                      ),
                       hintText: 'Introduce el correo aqui...',
                       hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
@@ -171,11 +167,17 @@ class _PassWidgetState extends State<PassWidget> {
                   child: FlutterFlowButton(
                     onPressed: () async {
                       if (_model.emailAddressTextController?.text.isEmpty ?? true) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'El correo es necesario!',
-                            ),
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error'),
+                            content: Text('El correo es necesario introducirlo.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
                           ),
                         );
                         return;

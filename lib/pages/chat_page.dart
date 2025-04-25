@@ -5,6 +5,7 @@ import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:swipemeet/flutter_flow/custom_navbar.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'chat_page_model.dart';
@@ -41,20 +42,68 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     super.dispose();
   }
 
+  void _onNavItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        context.goNamed('HomePage');
+        break;
+      case 1:
+        context.goNamed('ChatPage');
+        break;
+      case 2:
+        context.goNamed('ProfilePage');
+        break;
+    }
+  }
+
+  Future<List<types.User>> _getConnectedUsers() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return [];
+
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
+    final connectionIds = List<String>.from(userDoc['connections'] ?? []);
+
+    final connectedUsers = <types.User>[];
+
+    for (final uid in connectionIds) {
+      final userSnapshot =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (userSnapshot.exists) {
+        connectedUsers.add(types.User(
+          id: uid,
+          firstName: userSnapshot['name'] ?? 'Usuario',
+          imageUrl: userSnapshot['picture'] ??
+              'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+        ));
+      }
+    }
+
+    return connectedUsers;
+  }
+
   Future<void> _loadUserData() async {
     setState(() => isLoading = true);
 
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        DocumentSnapshot userDoc =
-            await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
         if (userDoc.exists) {
           setState(() {
             email = userDoc['email'] ?? '';
             name = userDoc['name'] ?? '';
-            picture = userDoc['picture'] ?? 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
+            picture = userDoc['picture'] ??
+                'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
           });
         } else {
           setState(() {
@@ -74,24 +123,10 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     setState(() => isLoading = false);
   }
 
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-    switch (index) {
-      case 0:
-        context.goNamed('HomePage');
-        break;
-      case 1:
-        context.goNamed('ChatPage');
-        break;
-      case 2:
-        context.goNamed('ProfilePage');
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: scaffoldKey,
       body: SafeArea(
         child: Column(
@@ -101,47 +136,28 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
               child: Text('SWIPEMEET', style: FlutterFlowTheme.swipeHeader),
             ),
             Expanded(
-              child: StreamBuilder<List<types.User>>(
-                stream: FirebaseChatCore.instance.users(),
+              child: FutureBuilder<List<types.User>>(
+                future: _getConnectedUsers(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No users found'));
+                    return const Center(
+                        child: Text('No tienes conexiones aún'));
                   }
 
+                  final users = snapshot.data!;
+
                   return ListView.builder(
-                    itemCount: snapshot.data!.length,
+                    itemCount: users.length,
                     itemBuilder: (context, index) {
-                      final user = snapshot.data![index];
-
-                      return FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(user.id) // Obtener datos del usuario con el id correspondiente
-                            .get(),
-                        builder: (context, userDocSnapshot) {
-                          if (userDocSnapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-
-                          if (userDocSnapshot.hasData && userDocSnapshot.data != null) {
-                            final otherUser = userDocSnapshot.data!;
-                            final otherUserName = otherUser['name'] ?? 'Usuario desconocido';
-                            final otherUserPicture = otherUser['picture'] ??
-                                'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
-
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: NetworkImage(otherUserPicture),
-                              ),
-                              title: Text(otherUserName, style: FlutterFlowTheme.headlineSmall),
-                              onTap: () => _openChatWithUser(user),
-                            );
-                          }
-
-                          return const ListTile(
-                            title: Text('Usuario no encontrado'),
-                          );
-                        },
+                      final user = users[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(user.imageUrl ??
+                              'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg'),
+                        ),
+                        title: Text(user.firstName ?? 'Usuario',
+                            style: FlutterFlowTheme.headlineSmall),
+                        onTap: () => _openChatWithUser(user),
                       );
                     },
                   );
@@ -151,20 +167,14 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-        ],
+      bottomNavigationBar: CustomNavBar(
         currentIndex: _selectedIndex,
-        selectedItemColor: const Color(0xFFAB82FF),
-        onTap: _onItemTapped,
+        onTap: _onNavItemTapped,
       ),
     );
   }
 
-  // 🔥 Función para abrir o crear un chat con otro usuario
+  // Función para abrir o crear un chat con otro usuario
   Future<void> _openChatWithUser(types.User user) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -203,7 +213,8 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     final room = types.Room(
       id: roomId,
       name: roomSnapshot['name'],
-      createdAt: (roomSnapshot['createdAt'] as Timestamp).millisecondsSinceEpoch,
+      createdAt:
+          (roomSnapshot['createdAt'] as Timestamp).millisecondsSinceEpoch,
       updatedAt: DateTime.now().millisecondsSinceEpoch,
       metadata: {'lastMessage': roomSnapshot['lastMessage']},
       users: [
@@ -231,8 +242,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  String otherUserName = 'Cargando...';  // Default placeholder text
-
+  String otherUserName = 'Cargando...'; // Default placeholder text
 
   @override
   void initState() {
@@ -245,9 +255,8 @@ class _ChatPageState extends State<ChatPage> {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     // Obtener los ids de los participantes, excluyendo al usuario actual
-    final otherUserId = widget.room.users
-        .firstWhere((user) => user.id != currentUserId)
-        .id;
+    final otherUserId =
+        widget.room.users.firstWhere((user) => user.id != currentUserId).id;
 
     // Obtener los datos del otro usuario desde Firestore
     final userDoc = await FirebaseFirestore.instance
@@ -274,7 +283,7 @@ class _ChatPageState extends State<ChatPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);  // Navega hacia atrás
+            Navigator.pop(context); // Navega hacia atrás
           },
         ),
       ),

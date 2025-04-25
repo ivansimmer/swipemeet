@@ -7,6 +7,7 @@ import '/models/flutter_flow_model.dart';
 import 'completing_profile1_model.dart';
 
 class CompletingProfile1Widget extends StatefulWidget {
+
   const CompletingProfile1Widget({super.key});
 
   static String routeName = 'CompletingProfile1';
@@ -22,6 +23,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _name = ""; // Variable para recoger el nombre
+  final _formKey = GlobalKey<FormState>(); // Usamos un GlobalKey para el formulario
 
   @override
   void initState() {
@@ -39,6 +41,26 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
     super.dispose();
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -46,6 +68,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
@@ -54,9 +77,10 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               // Progress Indicator
-              LinearPercentIndicator( // Barra de progreso superior
+              LinearPercentIndicator(
+                // Barra de progreso superior
                 percent: 0.25,
-                width: 400,
+                width: MediaQuery.of(context).size.width * 1, // width of the button
                 lineHeight: 12,
                 animation: true,
                 animateFromLastPercent: true,
@@ -93,72 +117,79 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0, 40, 0, 0),
                 child: Container(
-                  width: 300,
-                  child: TextFormField(
-                    controller: _model.textController,
-                    focusNode: _model.textFieldFocusNode,
-                    onChanged: (value) {
-                      setState(() {
-                        _name = value; // Guardamos el valor ingresado en la variable
-                      });
-                    },
-                    autofocus: false,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      labelStyle: FlutterFlowTheme.labelMedium.copyWith(
+                  width: MediaQuery.of(context).size.width * 0.8, // width of the button
+                  child: Form(  // Usamos un Form para validar
+                    key: _formKey,
+                    child: TextFormField(
+                      controller: _model.textController,
+                      focusNode: _model.textFieldFocusNode,
+                      onChanged: (value) {
+                        setState(() {
+                          _name = value; // Guardamos el valor ingresado en la variable
+                        });
+                      },
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        labelStyle: FlutterFlowTheme.labelMedium.copyWith(
+                          fontFamily: 'Inter',
+                          fontSize: 16,
+                          letterSpacing: 0.0,
+                        ),
+                        hintText: 'Introduce tu nombre aqui...',
+                        hintStyle: FlutterFlowTheme.labelMedium.copyWith(
+                          fontFamily: 'Inter',
+                          fontSize: 16,
+                          letterSpacing: 0.0,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.black,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Color(0x00000000),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: FlutterFlowTheme.error,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: FlutterFlowTheme.error,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        filled: true,
+                        fillColor: FlutterFlowTheme.secondaryBackground,
+                      ),
+                      style: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         fontSize: 16,
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'Introduce tu nombre aqui...',
-                      hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        fontSize: 16,
-                        letterSpacing: 0.0,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.black,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Color(0x00000000),
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: FlutterFlowTheme.error,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: FlutterFlowTheme.error,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      filled: true,
-                      fillColor: FlutterFlowTheme.secondaryBackground,
+                      cursorColor: FlutterFlowTheme.primaryText,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor introduce tu nombre';
+                        }
+                        RegExp regExp = RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$');
+                        if (!regExp.hasMatch(value)) {
+                          return 'Por favor ingresa solo letras';
+                        }
+                        return null;
+                      },
                     ),
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      fontSize: 16,
-                      letterSpacing: 0.0,
-                    ),
-                    cursorColor: FlutterFlowTheme.primaryText,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Porfavor introduce tu nombre';
-                      }
-                      return null;
-                    },
                   ),
                 ),
               ),
@@ -167,9 +198,9 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
               Align(
                 alignment: AlignmentDirectional(0, 0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(30, 10, 30, 0),
+                  padding: EdgeInsetsDirectional.fromSTEB(50, 10, 50, 0),
                   child: Text(
-                    'Asi es como apareceras en Swipemeet, y no podras cambiarlo mas tarde',
+                    'Así es como aparecerás en Swipemeet, y no podrás cambiarlo más tarde',
                     style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 12,
@@ -179,13 +210,22 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                 ),
               ),
 
-              // Boton continuar
+              // Botón continuar
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(0, 35, 0, 0),
                 child: FlutterFlowButton(
+                  color: Color(0xFFAB82FF),
+                  borderRadius: BorderRadius.circular(25),
+                  width: MediaQuery.of(context).size.width * 0.75, // width of the button
+                  height: MediaQuery.of(context).size.height * 0.07, // width of the button
                   onPressed: () async {
-                    // Uso GoRoute para navegar a la siguiente pagina pasando el nombre como parametro
-                    context.go('/completingProfile2Page/$_name');
+                    if (_formKey.currentState?.validate() ?? false) {
+                      // Si la validación pasa, navega a la siguiente página
+                      context.go('/completingProfile2Page/$_name');
+                    } else {
+                      // Si la validación falla, muestra un mensaje de error
+                      _showErrorDialog('Por favor ingresa un nombre válido');
+                    }
                   },
                   text: 'CONTINUAR',
                 ),

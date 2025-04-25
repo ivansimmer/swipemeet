@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:swipemeet/flutter_flow/custom_navbar.dart';
 import 'package:swipemeet/flutter_flow/flutter_flow_theme_provider.dart';
 import 'package:swipemeet/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -94,20 +95,19 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
     themeProvider.toggleTheme();
   }
 
-  void _onItemTapped(int index) {
+  void _onNavItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-
     switch (index) {
       case 0:
-        context.goNamed('HomePage'); // Navegar al home
+        context.goNamed('HomePage');
         break;
       case 1:
-        context.goNamed('ChatPage'); // Navegar al chat
+        context.goNamed('ChatPage');
         break;
       case 2:
-        context.goNamed('ProfilePage'); // Navegar al perfil
+        context.goNamed('ProfilePage');
         break;
     }
   }
@@ -120,11 +120,13 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
     return MaterialApp(
       theme: themeProvider.themeData, // Aplicar el tema según la preferencia
       home: Scaffold(
+        resizeToAvoidBottomInset: false,
         key: scaffoldKey,
         body: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            Padding( // Titulo header
+            Padding(
+              // Titulo header
               padding: const EdgeInsets.only(top: 70, bottom: 30),
               child: Text(
                 'SWIPEMEET',
@@ -141,39 +143,51 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                     boxShadow: [
                       BoxShadow(
                         blurRadius: 1,
-                        color: themeProvider.isDarkMode
-                          ? Color.fromRGBO(19, 18, 18, 1)
-                          : Colors.white,
-                        offset: Offset(0.0, 0),
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        offset: const Offset(0.0, 0),
                       ),
                     ],
                   ),
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(24, 12, 24, 12),
+                    padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 12),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Container(
                           // Imagen del perfil
-                          width: 70,
-                          height: 70,
+                          width: MediaQuery.of(context).size.width *
+                              0.17, // width of the button
+                          height: MediaQuery.of(context).size.height *
+                              0.1, // width of the button
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(2),
+                            padding: const EdgeInsets.all(2),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(50),
-                              child: Image.network(picture,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
+                              child: picture.isNotEmpty
+                                  ? Image.network(
+                                      picture,
+                                      width: MediaQuery.of(context).size.width *
+                                          0.17,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.1,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return const Icon(Icons.account_circle,
+                                            size: 48, color: Colors.grey);
+                                      },
+                                    )
+                                  : const Icon(Icons.account_circle,
+                                      size: 48, color: Colors.grey),
                             ),
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
+                          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +201,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               ),
                               Padding(
                                 padding:
-                                    EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                                    const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
                                 child: Text(
                                   email.isEmpty ? 'Cargando...' : email,
                                   style:
@@ -211,7 +225,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
 
             // Botón para cambiar el tema
             Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 1, 0, 0),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -226,10 +240,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                       },
                       child: Container(
                         width: MediaQuery.sizeOf(context).width,
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Padding(
                           padding:
-                              EdgeInsetsDirectional.fromSTEB(24, 12, 24, 12),
+                              const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 12),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -237,36 +251,36 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               Text('Cambiar a Modo Claro',
                                   style: FlutterFlowTheme.optionsProfile),
                               Container(
-                                width: 80,
-                                height: 40,
+                                width: MediaQuery.of(context).size.width * 0.22,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.06,
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.primaryBackground,
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Stack(
-                                  alignment: AlignmentDirectional(0, 0),
+                                  alignment: const AlignmentDirectional(0, 0),
                                   children: [
-                                    Align(
+                                    const Align(
                                       alignment: AlignmentDirectional(-0.9, 0),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             8, 2, 0, 0),
                                         child: Icon(
                                           Icons.wb_sunny_rounded,
-                                          color: FlutterFlowTheme.secondaryText,
+                                          color: Colors.black,
                                           size: 24,
                                         ),
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(0.9, 0),
+                                      alignment: const AlignmentDirectional(0.9, 0),
                                       child: Container(
                                         width: 36,
                                         height: 36,
                                         decoration: BoxDecoration(
-                                          color: FlutterFlowTheme
-                                              .secondaryBackground,
-                                          boxShadow: [
+                                          color: Colors.black,
+                                          boxShadow: const [
                                             BoxShadow(
                                               blurRadius: 4,
                                               color: Color(0x430B0D0F),
@@ -301,10 +315,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                       },
                       child: Container(
                         width: MediaQuery.sizeOf(context).width,
-                        decoration: BoxDecoration(),
+                        decoration: const BoxDecoration(),
                         child: Padding(
                           padding:
-                              EdgeInsetsDirectional.fromSTEB(24, 12, 24, 12),
+                              const EdgeInsetsDirectional.fromSTEB(24, 12, 24, 12),
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -312,38 +326,39 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               Text('Cambiar a Modo Oscuro',
                                   style: FlutterFlowTheme.optionsProfile),
                               Container(
-                                width: 80,
-                                height: 40,
+                                width: MediaQuery.of(context).size.width * 0.22,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.06,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
+                                  color: Colors.black
                                 ),
                                 child: Stack(
-                                  alignment: AlignmentDirectional(0, 0),
+                                  alignment: const AlignmentDirectional(0, 0),
                                   children: [
-                                    Align(
+                                    const Align(
                                       alignment: AlignmentDirectional(0.95, 0),
                                       child: Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             0, 0, 8, 0),
                                         child: Icon(
                                           Icons.nights_stay,
-                                          color: FlutterFlowTheme.secondaryText,
+                                          color: Colors.white,
                                           size: 20,
                                         ),
                                       ),
                                     ),
                                     Align(
-                                      alignment: AlignmentDirectional(-0.85, 0),
+                                      alignment: const AlignmentDirectional(-0.85, 0),
                                       child: Container(
                                         width: 36,
                                         height: 36,
                                         decoration: BoxDecoration(
-                                          color: FlutterFlowTheme
-                                              .secondaryBackground,
-                                          boxShadow: [
+                                          color: const Color.fromARGB(255, 255, 255, 255),
+                                          boxShadow: const [
                                             BoxShadow(
                                               blurRadius: 4,
-                                              color: Color(0x430B0D0F),
+                                              color: Color.fromARGB(67, 159, 162, 165),
                                               offset: Offset(
                                                 0.0,
                                                 2,
@@ -376,7 +391,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(24, 12, 0, 12),
+                      padding: const EdgeInsetsDirectional.fromSTEB(24, 12, 0, 12),
                       child: Text('Ajustes de la cuenta',
                           style: FlutterFlowTheme.optionsProfile),
                     ),
@@ -390,55 +405,12 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20, 0, 20, 0),
-                  child: Container(
-                    width: double.infinity,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: themeProvider.isDarkMode
-                          ? Colors.black
-                          : Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5,
-                          color: Color(0x3416202A),
-                          offset: Offset(0.0, 2),
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(12),
-                      shape: BoxShape.rectangle,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 20,
-                          ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
-                            child: Text(
-                              'Editar Perfil',
-                              style: FlutterFlowTheme.optionsProfile,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Cambiar intereses
-                Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20, 10, 20, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(20, 0, 20, 0),
                   child: InkWell(
                     onTap: () {
-                      // Navegar hacia la página ChangePassPage
-                      //context.goNamed(
-                          //'PassPage'); // Asegúrate de registrar esta ruta en tu enrutador
+                      // Navegar hacia la página EditPage
+                      context.goNamed(
+                          'EditProfilePage'); // Asegúrate de registrar esta ruta en tu enrutador
                     },
                     child: Container(
                       width: double.infinity,
@@ -447,7 +419,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                         color: themeProvider.isDarkMode
                             ? Colors.black
                             : Colors.white,
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             blurRadius: 5,
                             color: Color(0x3416202A),
@@ -458,17 +430,65 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                         shape: BoxShape.rectangle,
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              const Icon(
+                                Icons.edit_outlined,
+                                size: 20,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
+                                child: Text(
+                                  'Editar Perfil',
+                                  style: FlutterFlowTheme.optionsProfile,
+                                ),
+                              ),
+                            ],
+                          )),
+                    ),
+                  ),
+                ),
+
+                // Cambiar intereses
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(20, 10, 20, 0),
+                  child: InkWell(
+                    onTap: () {
+                      // Navegar hacia la página ChangePassPage
+                      context.goNamed('InterestsPage');
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: themeProvider.isDarkMode
+                            ? Colors.black
+                            : Colors.white,
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 5,
+                            color: Color(0x3416202A),
+                            offset: Offset(0.0, 2),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(12),
+                        shape: BoxShape.rectangle,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.interests_outlined,
                               size: 20,
                             ),
                             Padding(
                               padding:
-                                  EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
+                                  const EdgeInsetsDirectional.fromSTEB(16, 0, 0, 0),
                               child: Text(
                                 'Cambiar Intereses',
                                 style: FlutterFlowTheme.optionsProfile,
@@ -483,7 +503,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
 
                 // Botón "Log Out"
                 Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(20, 40, 20, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(20, 40, 20, 0),
                   child: FlutterFlowButton(
                     onPressed: () async {
                       await FirebaseAuth.instance.signOut();
@@ -491,7 +511,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                     },
                     text: 'Cerrar Sesion',
                     height: 50,
-                    color: Color(0xFFAB82FF),
+                    color: const Color(0xFFAB82FF),
                     borderRadius: BorderRadius.circular(24),
                   ),
                 ),
@@ -499,23 +519,9 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: CustomNavBar(
           currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Inicio',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat),
-              label: 'Chat',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Perfil',
-            ),
-          ],
+          onTap: _onNavItemTapped,
         ),
       ),
     );

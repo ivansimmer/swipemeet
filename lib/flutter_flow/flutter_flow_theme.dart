@@ -24,7 +24,7 @@ class FlutterFlowTheme {
       TextStyle(fontSize: 18);
 
   static TextStyle get homePerfil =>
-      TextStyle(fontSize: 25, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 25, fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis);
 
   static TextStyle get tituloPages =>
       TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
