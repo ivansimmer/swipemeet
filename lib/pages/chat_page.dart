@@ -1,3 +1,4 @@
+// 👇 [IMPORTS]
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -10,6 +11,7 @@ import 'package:swipemeet/flutter_flow/custom_navbar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'chat_page_model.dart';
 
+// 👇 [ChatPageWidget]
 class ChatPageWidget extends StatefulWidget {
   const ChatPageWidget({super.key});
 
@@ -18,6 +20,22 @@ class ChatPageWidget extends StatefulWidget {
 
   @override
   State<ChatPageWidget> createState() => _ChatPageWidgetState();
+}
+
+class ChatPreview {
+  final types.User user;
+  final String lastMessage;
+  final DateTime updatedAt;
+  final String roomId;
+  final bool hasUnread;
+
+  ChatPreview({
+    required this.user,
+    required this.lastMessage,
+    required this.updatedAt,
+    required this.roomId,
+    required this.hasUnread,
+  });
 }
 
 class _ChatPageWidgetState extends State<ChatPageWidget> {
@@ -59,32 +77,37 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     }
   }
 
-  Future<List<types.User>> _getConnectedUsers() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return [];
+  Future<void> markRoomAsSeen(String roomId, String currentUserId) async {
+    final roomRef = FirebaseFirestore.instance.collection('rooms').doc(roomId);
+    final snapshot = await roomRef.get();
+    final data = snapshot.data();
 
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser.uid)
-        .get();
-    final connectionIds = List<String>.from(userDoc['connections'] ?? []);
+    if (data == null) return;
 
-    final connectedUsers = <types.User>[];
+    final participantIds = List<String>.from(data['participantIds']);
+    List<bool> seenBy = List<bool>.from(data['seenBy'] ?? []);
 
-    for (final uid in connectionIds) {
-      final userSnapshot =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      if (userSnapshot.exists) {
-        connectedUsers.add(types.User(
-          id: uid,
-          firstName: userSnapshot['name'] ?? 'Usuario',
-          imageUrl: userSnapshot['picture'] ??
-              'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
-        ));
-      }
+    // Ensure seenBy has same length as participantIds
+    if (seenBy.length != participantIds.length) {
+      seenBy = List<bool>.filled(participantIds.length, false);
     }
 
-    return connectedUsers;
+    final index = participantIds.indexOf(currentUserId);
+    if (index == -1) return;
+
+    seenBy[index] = true;
+
+    await roomRef.update({'seenBy': seenBy});
+  }
+
+  bool hasUnreadMessage(Map<String, dynamic> roomData, String currentUserId) {
+    final participants = List<String>.from(roomData['participantIds']);
+    final seenBy = List<bool>.from(roomData['seenBy'] ?? []);
+
+    final index = participants.indexOf(currentUserId);
+    if (index == -1 || seenBy.length != participants.length) return false;
+
+    return !seenBy[index];
   }
 
   Future<void> _loadUserData() async {
@@ -136,28 +159,124 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
               child: Text('SWIPEMEET', style: FlutterFlowTheme.swipeHeader),
             ),
             Expanded(
-              child: FutureBuilder<List<types.User>>(
-                future: _getConnectedUsers(),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('rooms')
+                    .where('participantIds',
+                        arrayContains: FirebaseAuth.instance.currentUser!.uid)
+                    .orderBy('updatedAt', descending: true)
+                    .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(
                         child: Text('No tienes conexiones aún'));
                   }
 
-                  final users = snapshot.data!;
+                  final List<ChatPreview> chats = [];
+
+                  for (final doc in snapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final participantIds =
+                        List<String>.from(data['participantIds']);
+                    final otherUserId = participantIds.firstWhere(
+                        (id) => id != FirebaseAuth.instance.currentUser!.uid);
+
+                    final hasUnread = hasUnreadMessage(
+                        data, FirebaseAuth.instance.currentUser!.uid);
+
+                    chats.add(ChatPreview(
+                      user: types.User(
+                        id: otherUserId,
+                        firstName: '...', // Se carga en el FutureBuilder abajo
+                        imageUrl: '',
+                      ),
+                      lastMessage: data['lastMessage'] ?? '',
+                      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ??
+                          DateTime.now(),
+                      roomId: doc.id,
+                      hasUnread: hasUnread,
+                    ));
+                  }
 
                   return ListView.builder(
-                    itemCount: users.length,
+                    itemCount: chats.length,
                     itemBuilder: (context, index) {
-                      final user = users[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(user.imageUrl ??
-                              'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg'),
-                        ),
-                        title: Text(user.firstName ?? 'Usuario',
-                            style: FlutterFlowTheme.headlineSmall),
-                        onTap: () => _openChatWithUser(user),
+                      final chat = chats[index];
+
+                      return FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(chat.user.id)
+                            .get(),
+                        builder: (context, userSnapshot) {
+                          if (!userSnapshot.hasData) {
+                            return const SizedBox();
+                          }
+
+                          final userDoc = userSnapshot.data!;
+                          final user = types.User(
+                            id: chat.user.id,
+                            firstName: userDoc['name'] ?? 'Usuario',
+                            imageUrl: userDoc['picture'] ??
+                                'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+                          );
+
+                          final isUnread = hasUnreadMessage(
+                            snapshot.data!.docs[index].data()
+                                as Map<String, dynamic>,
+                            FirebaseAuth.instance.currentUser!.uid,
+                          );
+
+                          return ListTile(
+                            leading: Stack(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: NetworkImage(user.imageUrl!),
+                                ),
+                                if (chat.hasUnread)
+                                  Positioned(
+                                    right: 0,
+                                    top: 0,
+                                    child: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            title: Text(
+                              user.firstName ?? 'Usuario',
+                              style: FlutterFlowTheme.headlineSmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              chat.lastMessage,
+                              style: TextStyle(
+                                fontWeight: isUnread
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Text(
+                              TimeOfDay.fromDateTime(chat.updatedAt)
+                                  .format(context),
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey),
+                            ),
+                            onTap: () async {
+                              await markRoomAsSeen(chat.roomId,
+                                  FirebaseAuth.instance.currentUser!.uid);
+                              _openChatWithUser(user);
+                            },
+                          );
+                        },
                       );
                     },
                   );
@@ -174,11 +293,9 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     );
   }
 
-  // Función para abrir o crear un chat con otro usuario
   Future<void> _openChatWithUser(types.User user) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-    // Buscar si ya existe un chat entre estos dos usuarios
     final query = await FirebaseFirestore.instance
         .collection('rooms')
         .where('participantIds', arrayContains: currentUserId)
@@ -195,18 +312,17 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     }
 
     if (roomId.isEmpty) {
-      // Crear una nueva sala de chat si no existe
       final roomRef = await FirebaseFirestore.instance.collection('rooms').add({
         'name': 'Sala de Chat',
         'createdAt': FieldValue.serverTimestamp(),
         'lastMessage': '',
         'participantIds': [currentUserId, user.id],
+        'seenBy': [true, false], // 👈 Se inicia con el que crea en true
       });
 
       roomId = roomRef.id;
     }
 
-    // Obtener los datos de la sala
     final roomSnapshot =
         await FirebaseFirestore.instance.collection('rooms').doc(roomId).get();
 
@@ -224,7 +340,6 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
       type: types.RoomType.direct,
     );
 
-    // Navegar a la pantalla del chat con la sala correcta
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ChatPage(room: room)),
@@ -242,23 +357,41 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  String otherUserName = 'Cargando...'; // Default placeholder text
+  String otherUserName = 'Cargando...';
 
   @override
   void initState() {
     super.initState();
     _getOtherUserDetails();
+    _markSeen();
   }
 
-  // Obtener detalles del otro usuario (nombre y foto de perfil)
+  Future<void> _markSeen() async {
+    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance
+        .collection('rooms')
+        .doc(widget.room.id)
+        .get()
+        .then((doc) async {
+      final data = doc.data();
+      if (data == null) return;
+
+      final participantIds = List<String>.from(data['participantIds']);
+      final seenBy = List<bool>.from(data['seenBy'] ?? []);
+      final index = participantIds.indexOf(currentUserId);
+
+      if (index != -1 && index < seenBy.length) {
+        seenBy[index] = true;
+        await doc.reference.update({'seenBy': seenBy});
+      }
+    });
+  }
+
   Future<void> _getOtherUserDetails() async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
-    // Obtener los ids de los participantes, excluyendo al usuario actual
     final otherUserId =
         widget.room.users.firstWhere((user) => user.id != currentUserId).id;
 
-    // Obtener los datos del otro usuario desde Firestore
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(otherUserId)
@@ -267,10 +400,6 @@ class _ChatPageState extends State<ChatPage> {
     if (userDoc.exists) {
       setState(() {
         otherUserName = userDoc['name'] ?? 'Usuario desconocido';
-      });
-    } else {
-      setState(() {
-        otherUserName = 'Usuario desconocido';
       });
     }
   }
@@ -283,7 +412,7 @@ class _ChatPageState extends State<ChatPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navega hacia atrás
+            Navigator.pop(context);
           },
         ),
       ),
@@ -292,7 +421,28 @@ class _ChatPageState extends State<ChatPage> {
         builder: (context, snapshot) {
           return Chat(
             messages: snapshot.data ?? [],
-            onSendPressed: (types.PartialText message) {
+            onSendPressed: (types.PartialText message) async {
+              final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+              final roomDoc = FirebaseFirestore.instance
+                  .collection('rooms')
+                  .doc(widget.room.id);
+
+              final roomSnap = await roomDoc.get();
+              final data = roomSnap.data();
+              if (data == null) return;
+
+              final participantIds =
+                  List<String>.from(data['participantIds'] ?? []);
+              final seenBy =
+                  participantIds.map((id) => id == currentUserId).toList();
+
+              await roomDoc.update({
+                'lastMessage': message.text,
+                'updatedAt': FieldValue.serverTimestamp(),
+                'seenBy': seenBy,
+              });
+
               FirebaseChatCore.instance.sendMessage(message, widget.room.id);
             },
             user: types.User(id: FirebaseAuth.instance.currentUser!.uid),
