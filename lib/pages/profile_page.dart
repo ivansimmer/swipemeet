@@ -251,12 +251,12 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               Text('Cambiar a Modo Claro',
                                   style: FlutterFlowTheme.optionsProfile),
                               Container(
-                                width: MediaQuery.of(context).size.width * 0.22,
+                                width: MediaQuery.of(context).size.width * 0.25,
                                 height:
                                     MediaQuery.of(context).size.height * 0.06,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(25),
                                 ),
                                 child: Stack(
                                   alignment: const AlignmentDirectional(0, 0),
@@ -274,7 +274,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: const AlignmentDirectional(0.9, 0),
+                                      alignment: const AlignmentDirectional(0.80, 0),
                                       child: Container(
                                         width: 36,
                                         height: 36,
@@ -326,11 +326,11 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               Text('Cambiar a Modo Oscuro',
                                   style: FlutterFlowTheme.optionsProfile),
                               Container(
-                                width: MediaQuery.of(context).size.width * 0.22,
+                                width: MediaQuery.of(context).size.width * 0.25,
                                 height:
                                     MediaQuery.of(context).size.height * 0.06,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(25),
                                   color: Colors.black
                                 ),
                                 child: Stack(
@@ -349,7 +349,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                       ),
                                     ),
                                     Align(
-                                      alignment: const AlignmentDirectional(-0.85, 0),
+                                      alignment: const AlignmentDirectional(-0.80, 0),
                                       child: Container(
                                         width: 36,
                                         height: 36,
