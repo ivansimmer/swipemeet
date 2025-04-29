@@ -116,8 +116,8 @@ final GoRouter _router = GoRouter(
         name: 'InterestsPage',
         builder: (context, state) => const InterestsPageWidget()),
     GoRoute(
-        path: '/editProfilePage',
-        name: 'EditProfilePage',
+        path: '/editPage',
+        name: 'EditPage',
         builder: (context, state) => const EditWidget()),
   ],
 );

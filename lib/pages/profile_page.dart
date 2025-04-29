@@ -198,6 +198,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                   fontFamily: 'Inter Tight',
                                   letterSpacing: 0.0,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                               Padding(
                                 padding:
@@ -410,7 +412,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                     onTap: () {
                       // Navegar hacia la página EditPage
                       context.goNamed(
-                          'EditProfilePage'); // Asegúrate de registrar esta ruta en tu enrutador
+                          'EditPage'); // Asegúrate de registrar esta ruta en tu enrutador
                     },
                     child: Container(
                       width: double.infinity,

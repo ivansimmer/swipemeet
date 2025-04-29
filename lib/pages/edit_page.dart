@@ -1,8 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:swipemeet/flutter_flow/custom_navbar.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class EditWidget extends StatefulWidget {
   const EditWidget({super.key});
@@ -16,32 +20,14 @@ class EditWidget extends StatefulWidget {
 
 class _EditWidgetState extends State<EditWidget> {
   final TextEditingController _nameController = TextEditingController();
-  int _selectedIndex = 2;
+  final TextEditingController _emailController = TextEditingController();
   bool isLoading = false;
-  // Se guarda la ruta local de la imagen, asegurándonos de no tener el prefijo "file://"
   String profilePicture = '';
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-  }
-
-  void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        context.goNamed('HomePage');
-        break;
-      case 1:
-        context.goNamed('ChatPage');
-        break;
-      case 2:
-        context.goNamed('ProfilePage');
-        break;
-    }
   }
 
   Future<void> _loadUserData() async {
@@ -60,41 +46,104 @@ class _EditWidgetState extends State<EditWidget> {
         if (userDoc.exists) {
           setState(() {
             _nameController.text = userDoc['name'] ?? '';
-            isLoading = false;
-          });
-        } else {
-          setState(() {
-            isLoading = false;
+            _emailController.text = userDoc['email'] ?? '';
+            profilePicture = userDoc['picture'] ?? '';
           });
         }
       } catch (e) {
-        setState(() {
-          isLoading = false;
-        });
+        print("Error cargando datos: $e");
       }
-    } else {
-      setState(() {
-        isLoading = false;
-      });
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _updateUserData() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      try {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'name': _nameController.text,
-        }, SetOptions(merge: true));
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'picture': profilePicture,
+      }, SetOptions(merge: true));
+    }
+  }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Perfil actualizado correctamente")),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Error al actualizar el perfil")),
-        );
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        isLoading = true;
+      });
+
+      File imageFile = File(image.path);
+      try {
+        await _uploadImageToAzure(imageFile);
+      } catch (e, st) {
+        print("🛑 Error inesperado en _pickImage: $e");
+        print("StackTrace: $st");
+      } finally {
+        setState(() {
+          isLoading = false;
+        });
       }
+    }
+  }
+
+  Future<void> _uploadImageToAzure(File imageFile) async {
+    final String storageAccountName = "tindermonlau";
+    final String containerName = "imagenes";
+    final String sasToken =
+        "sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2025-06-25T00:52:15Z&st=2025-04-24T16:52:15Z&spr=https,http&sig=rDyiZUrrI%2FOuotORnL3UgOCeAGSZLZdXdsJxURK1Hm8%3D";
+
+    final String blobName =
+        "${DateTime.now().millisecondsSinceEpoch}_${imageFile.uri.pathSegments.last}";
+    final String blobUrl =
+        "https://$storageAccountName.blob.core.windows.net/$containerName/$blobName?$sasToken";
+    print("Azure URL: $blobUrl");
+
+    final Uri serverUrl = Uri.parse(blobUrl);
+
+    try {
+      var request = http.Request('PUT', serverUrl);
+
+      request.headers.addAll({
+        'Content-Type': 'application/octet-stream',
+        'x-ms-blob-type': 'BlockBlob',
+      });
+
+      request.bodyBytes = await imageFile.readAsBytes();
+      var response = await request.send();
+
+      if (response.statusCode == 201) {
+        String imageUrl =
+            "https://$storageAccountName.blob.core.windows.net/$containerName/$blobName";
+        print("✅ Imagen subida correctamente: $imageUrl");
+        setState(() {
+          profilePicture = imageUrl;
+        });
+      } else {
+        print("❌ Fallo al subir imagen. Código: ${response.statusCode}");
+        response.stream.transform(const Utf8Decoder()).listen((value) {
+          print("Respuesta del servidor: $value");
+        });
+      }
+    } catch (e, st) {
+      print("🛑 Error subiendo imagen a Azure: $e");
+      print("StackTrace: $st");
+    }
+  }
+
+  ImageProvider _buildProfileImage() {
+    if (profilePicture.isEmpty) {
+      return const AssetImage('assets/default_profile.png');
+    } else if (profilePicture.startsWith("http")) {
+      return NetworkImage(profilePicture);
+    } else {
+      return FileImage(File(profilePicture));
     }
   }
 
@@ -104,42 +153,70 @@ class _EditWidgetState extends State<EditWidget> {
       appBar: AppBar(
         title: const Text("Editar Perfil"),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.goNamed('ProfilePage'),
-        ),
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              context.goNamed('ProfilePage');
+            },
+          ),
       ),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   GestureDetector(
-                    child: const CircleAvatar(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
                       radius: 50,
+                      backgroundImage: _buildProfileImage(),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: "Nombre"),
+                    decoration: const InputDecoration(
+                      labelText: "Nombre",
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 1,
                   ),
-                  const SizedBox(height: 10),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      await _updateUserData();
-                      context.goNamed('ProfilePage');
-                    },
-                    child: const Text("Guardar Cambios"),
+                  TextField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: "Correo Electrónico",
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
+                    style: const TextStyle(fontSize: 16),
+                    maxLines: 1,
+                    enabled: false, // No permitir editar el email
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await _updateUserData();
+                        context.goNamed('ProfilePage');
+                      },
+                      child: const Text("Guardar Cambios"),
+                    ),
                   ),
                 ],
               ),
             ),
-      bottomNavigationBar: CustomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavItemTapped,
-      ),
     );
   }
 }
