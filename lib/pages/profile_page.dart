@@ -158,7 +158,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                           width: MediaQuery.of(context).size.width *
                               0.17, // width of the button
                           height: MediaQuery.of(context).size.height *
-                              0.1, // width of the button
+                              0.08, // height of the button
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(50),
                           ),

@@ -66,6 +66,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
             children: [
               Row(children: [
                 FlutterFlowIconButton(
+                  // Boton para volver atras
                   icon: Icons.arrow_back_rounded,
                   onPressed: () async {
                     context.goNamed('StartPage');
@@ -81,6 +82,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ]),
               Align(
+                // Texto de correo
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
@@ -94,12 +96,12 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Align(
+                // Input del correo
                 alignment: AlignmentDirectional(0, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                   child: Container(
-                    width: MediaQuery.of(context).size.width *
-                        0.7, // width of the button
+                    width: MediaQuery.of(context).size.width * 0.7,
                     child: TextFormField(
                       controller: _model.textFieldEmailTextController,
                       focusNode: _model.textFieldEmailFocusNode,
@@ -162,6 +164,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Align(
+                // Texto contraseña
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
@@ -175,10 +178,10 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Padding(
+                // Input contraseña
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width *
-                      0.7, // width of the button
+                  width: MediaQuery.of(context).size.width * 0.7,
                   child: TextFormField(
                     controller: _model.textFieldPasswordTextController,
                     focusNode: _model.textFieldPasswordFocusNode,
@@ -251,6 +254,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Align(
+                // Texto confirma contraseña
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
@@ -264,10 +268,10 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Padding(
+                // Input del confirmar contraseña
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: MediaQuery.of(context).size.width *
-                      0.7, // width of the button
+                  width: MediaQuery.of(context).size.width * 0.7,
                   child: TextFormField(
                     controller: _model.textFieldConfirmTextController,
                     focusNode: _model.textFieldConfirmFocusNode,
@@ -343,13 +347,22 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
                   child: FlutterFlowButton(
                     onPressed: () async {
+                      // Estos son los correos que tienen el acceso permitido a swipemeet
                       final List<String> dominiosPermitidos = [
                         '@campus.monlau.com',
-                        '@gmail.com',
-                        // Agrega más dominios aquí si quieres
+                        '@monlau.com',
+                        '@alumnes.ub.edu', // UB
+                        '@upc.edu', // UPC
+                        '@estudiantat.upc.edu', // UPC
+                        '@uab.cat', // UAB
+                        '@e-campus.uab.cat', // UAB
+                        '@upf.edu', // UPF
+                        '@estudiant.upf.edu', // UPF
+                        '@esade.edu', // ESADE
+                        '@salleurl.edu' // LA SALLE
                       ];
 
-                      // Función para obtener un mensaje personalizado del error de Firebase
+                      // Funcion para devolver diferente mensaje de error en funcion de a que se debe
                       String getFirebaseErrorMessage(String code) {
                         switch (code) {
                           case 'email-already-in-use':
@@ -365,12 +378,13 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         }
                       }
 
-                      // Validar que las contraseñas coincidan
+                      // Comprobacion de que ambas contraseñas sean iguales
                       if (_model.textFieldPasswordTextController?.text !=
                           _model.textFieldConfirmTextController?.text) {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
+                            // Si no son iguales muestro alerta con mensaje de error
                             title: Text('Error'),
                             content: Text('¡Las contraseñas no coinciden!'),
                             actions: [
@@ -384,16 +398,17 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         return;
                       }
 
-                      // Normalizar correo
+                      // Guardo el email
                       final email = _model.textFieldEmailTextController!.text
                           .trim()
                           .toLowerCase();
 
-                      // Validar dominio permitido
+                      // Comprobacion de que el correo esta entre los permitidos
                       bool emailPermitido = dominiosPermitidos.any(
                         (dominio) => email.endsWith(dominio.toLowerCase()),
                       );
 
+                      // Si no esta permitido muestro alerta con menasaje de error
                       if (!emailPermitido) {
                         debugPrint(
                             'Correo no permitido, cancelando creación de cuenta');
@@ -415,20 +430,23 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         return;
                       }
 
+                      // Si lo anterior ha pasado las comprobaciones, creo el usuario con email y contraseña
                       try {
                         final userCredential = await FirebaseAuth.instance
                             .createUserWithEmailAndPassword(
-                          email: email,
-                          password:
-                              _model.textFieldPasswordTextController!.text,
+                          email: email, // pongo el email que he recogido antes
+                          password: _model.textFieldPasswordTextController!
+                              .text, // recojo el texto de la contraseña del campo input
                         );
 
                         final user = userCredential.user;
 
                         if (user != null) {
-                          context.goNamed('CompletingProfile1Page');
+                          context.goNamed(
+                              'CompletingProfile1Page'); // Si todo sale bien paso a la pantalla de completar el perfil
                         } else {
                           showDialog(
+                            // En caso de no salir bien, muestro una alerta de error al crear la cuenta
                             context: context,
                             builder: (context) => AlertDialog(
                               title: Text('Error al crear cuenta'),

@@ -45,7 +45,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
 
     // Inicializa los valores predeterminados para los dropdowns
     _model.dropDownValue1 = 'Monlau Centre d\'Estudis'; // Valor predeterminado
-    _model.dropDownValue2 = 'CFGS DAM'; // Valor predeterminado
+    _model.dropDownValue2 = 'Ciencias'; // Valor predeterminado
   }
 
   @override
@@ -125,7 +125,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                 child: FlutterFlowDropDown(
                   // Dropdown escuelas
-                  items: const ['Monlau Centre d\'Estudis', 'UOC', 'UB'],
+                  items: const ['Monlau Centre d\'Estudis', 'UPC', 'UB', 'UPF', 'UAB', 'ESADE', 'LA SALLE'],
                   selectedItem: _model.dropDownValue1,
                   onChanged: (val) =>
                       setState(() => _model.dropDownValue1 = val),
@@ -161,7 +161,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                   padding: const EdgeInsetsDirectional.fromSTEB(30, 60, 0, 0),
                   child: Text(
                     // Texto estudios
-                    '¿Que estas estudiando?',
+                    '¿En que area de estudios te encuentras?',
                     style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
@@ -173,7 +173,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                 child: FlutterFlowDropDown(
                   // Dropdown estudios
-                  items: const ['CFGS DAM', 'Computer Science', 'CFGS DAW'],
+                  items: const ['Ciencias', 'Informatica', 'Ciencias Sociales', 'Matematicas', 'Ciencias de la Salud', 'Humanidades', 'Ingenieria', 'Economia', 'Artes', 'Otro'],
                   selectedItem: _model.dropDownValue2,
                   onChanged: (val) =>
                       setState(() => _model.dropDownValue2 = val),

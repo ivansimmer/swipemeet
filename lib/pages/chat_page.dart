@@ -1,4 +1,3 @@
-// 👇 [IMPORTS]
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -11,7 +10,6 @@ import 'package:swipemeet/flutter_flow/custom_navbar.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'chat_page_model.dart';
 
-// 👇 [ChatPageWidget]
 class ChatPageWidget extends StatefulWidget {
   const ChatPageWidget({super.key});
 
@@ -22,6 +20,7 @@ class ChatPageWidget extends StatefulWidget {
   State<ChatPageWidget> createState() => _ChatPageWidgetState();
 }
 
+// Clase para como se ve el contenedor de cada sala en la pagina
 class ChatPreview {
   final types.User user;
   final String lastMessage;
@@ -77,6 +76,7 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     }
   }
 
+  // Uso esta funcion para marcar la sala como leida (en caso de no estarlo)
   Future<void> markRoomAsSeen(String roomId, String currentUserId) async {
     final roomRef = FirebaseFirestore.instance.collection('rooms').doc(roomId);
     final snapshot = await roomRef.get();
@@ -87,7 +87,7 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     final participantIds = List<String>.from(data['participantIds']);
     List<bool> seenBy = List<bool>.from(data['seenBy'] ?? []);
 
-    // Ensure seenBy has same length as participantIds
+    // Compruebo que el campo seenBy sea del mismo tamaño que los participantes de la sala
     if (seenBy.length != participantIds.length) {
       seenBy = List<bool>.filled(participantIds.length, false);
     }
@@ -95,11 +95,14 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     final index = participantIds.indexOf(currentUserId);
     if (index == -1) return;
 
+    // Con esto marco la sala como vista
     seenBy[index] = true;
 
+    // Y con esto actualizo la bd con el valor
     await roomRef.update({'seenBy': seenBy});
   }
 
+  // Esta funcion me devuelve si hay algun mensaje sin leer o no
   bool hasUnreadMessage(Map<String, dynamic> roomData, String currentUserId) {
     final participants = List<String>.from(roomData['participantIds']);
     final seenBy = List<bool>.from(roomData['seenBy'] ?? []);
@@ -110,6 +113,7 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     return !seenBy[index];
   }
 
+  // Uso esta funcion para cargar toda la informacion del usuario como correo, nombre, etc
   Future<void> _loadUserData() async {
     setState(() => isLoading = true);
 
@@ -158,18 +162,18 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Text('SWIPEMEET', style: FlutterFlowTheme.swipeHeader),
             ),
-            Expanded(
+            Expanded( // Con esto cargo todas las salas abiertas
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('rooms')
                     .where('participantIds',
                         arrayContains: FirebaseAuth.instance.currentUser!.uid)
-                    .orderBy('updatedAt', descending: true)
+                    .orderBy('updatedAt', descending: true) // Gracias a indexarlo, puedo ordenarlo en tiempo descendiente
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(
-                        child: Text('No tienes conexiones aún'));
+                        child: Text('No tienes conexiones aún')); // Si no hay salas muestro que no tiene conexiones
                   }
 
                   final List<ChatPreview> chats = [];
@@ -184,15 +188,15 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                     final hasUnread = hasUnreadMessage(
                         data, FirebaseAuth.instance.currentUser!.uid);
 
-                    chats.add(ChatPreview(
+                    chats.add(ChatPreview( // Añado tantos previews como salas hayan
                       user: types.User(
                         id: otherUserId,
-                        firstName: '...', // Se carga en el FutureBuilder abajo
-                        imageUrl: '',
+                        firstName: '...', // Cargo el nombre posteriormente
+                        imageUrl: '', // Cargo la imagen posteriormente
                       ),
-                      lastMessage: data['lastMessage'] ?? '',
-                      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ??
-                          DateTime.now(),
+                      lastMessage: data['lastMessage'] ?? '', // Cargo el ultimo mensaje que hay en bd, si no hay se mostrara espacio vacio
+                      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? 
+                          DateTime.now(), // Cargo la fecha del ultimo mensaje, si no hay mensajes aun, pongo la hora actual
                       roomId: doc.id,
                       hasUnread: hasUnread,
                     ));
@@ -216,9 +220,9 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                           final userDoc = userSnapshot.data!;
                           final user = types.User(
                             id: chat.user.id,
-                            firstName: userDoc['name'] ?? 'Usuario',
-                            imageUrl: userDoc['picture'] ??
-                                'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+                            firstName: userDoc['name'] ?? 'Usuario', // Aqui cargo el nombre
+                            imageUrl: userDoc['picture'] ?? 
+                                'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg', // Aqui cargo la imagen, si no hay pongo esa por fefecto
                           );
 
                           final isUnread = hasUnreadMessage(
@@ -233,7 +237,7 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                                 CircleAvatar(
                                   backgroundImage: NetworkImage(user.imageUrl!),
                                 ),
-                                if (chat.hasUnread)
+                                if (chat.hasUnread) // Si tiene mensajes sin leer muestro una burbujita roja al lado de la imagen del usuario
                                   Positioned(
                                     right: 0,
                                     top: 0,
@@ -286,13 +290,14 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomNavBar(
+      bottomNavigationBar: CustomNavBar( // Navbar propia
         currentIndex: _selectedIndex,
         onTap: _onNavItemTapped,
       ),
     );
   }
 
+  // Funcion para abir un chat con el usuario que clico
   Future<void> _openChatWithUser(types.User user) async {
     final currentUserId = FirebaseAuth.instance.currentUser!.uid;
 

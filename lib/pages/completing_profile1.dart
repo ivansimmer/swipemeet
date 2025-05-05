@@ -23,7 +23,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _name = ""; // Variable para recoger el nombre
-  final _formKey = GlobalKey<FormState>(); // Usamos un GlobalKey para el formulario
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {

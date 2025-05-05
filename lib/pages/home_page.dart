@@ -452,9 +452,30 @@ class _HomePageWidgetState extends State<HomePageWidget>
               ),
             ],
           ),
-          Text(profile['university'] ?? 'Desconocido'),
-          Text(profile['studies'] ?? 'Desconocido'),
-          Text(profile['ubicacion'] ?? 'Ubicacion desconocida'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.location_city_outlined),
+              SizedBox(width: 10),
+              Text(profile['university'] ?? 'Desconocido')
+            ]
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.school),
+              SizedBox(width: 10),
+              Text(profile['studies'] ?? 'Desconocido')
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.location_on),
+              SizedBox(width: 10),
+              Text(profile['ubicacion'] ?? 'Ubicacion desconocida')
+            ],
+          )  
         ],
       ),
     );
