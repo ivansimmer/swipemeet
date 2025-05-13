@@ -32,8 +32,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
   List<String> interests = [], activities = [];
   bool isLoading = true;
   int _selectedIndex = 2;
-
+  String favoriteSong = '';
   bool _isPressed = false;
+  String favoriteSongImage = '';
+
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
@@ -109,9 +111,12 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
             photo4 = doc['photo4'] ?? '';
             university = doc['university'] ?? '';
             studies = doc['studies'] ?? '';
+            favoriteSongImage = doc['favorite_song_image'] ?? '';
+
             location = doc['ubicacion'] ?? '';
             description = doc['description'] ?? '';
             final born = doc['born_date'] ?? '';
+            favoriteSong = doc['favorite_song'] ?? '';
             age = _calculateAge(born);
             interests = List<String>.from(doc['academic_interests'] ?? []);
             activities = List<String>.from(doc['favorite_activities'] ?? []);
@@ -160,6 +165,9 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final songBackgroundColor =
+        isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -259,17 +267,21 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
                                   const SizedBox(height: 8),
                                   Text(
                                     age,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black26,
-                                          offset: Offset(1, 1),
-                                          blurRadius: 2,
-                                        ),
-                                      ],
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                      shadows: isDarkMode
+                                          ? const [
+                                              Shadow(
+                                                color: Colors.black26,
+                                                offset: Offset(1, 1),
+                                                blurRadius: 2,
+                                              ),
+                                            ]
+                                          : null,
                                     ),
                                   ),
                                 ],
@@ -369,8 +381,54 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
                               "El usuario no tiene actividades favoritas.",
                               style:
                                   TextStyle(fontSize: 15, color: Colors.grey)),
-                      const SizedBox(height: 24),
                       const SizedBox(height: 8),
+                      if (favoriteSong.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        const Text("Canción favorita",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18)),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: songBackgroundColor,
+                          ),
+                          child: Row(
+                            children: [
+                              if (favoriteSongImage.isNotEmpty)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    favoriteSongImage,
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                        Icons.music_note,
+                                        size: 48,
+                                        color: Colors.grey),
+                                  ),
+                                )
+                              else
+                                const Icon(Icons.music_note,
+                                    size: 48, color: Color(0xFFAB82FF)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  favoriteSong,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
                       Builder(
                         builder: (context) {
                           final photos = [photo1, photo2, photo3, photo4]
@@ -480,55 +538,6 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
                           }
                         },
                       ),
-                      const SizedBox(height: 30),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.logout, color: Colors.white),
-                          label: const Text(
-                            "Cerrar sesión",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("¿Cerrar sesión?"),
-                                content: const Text(
-                                    "¿Estás seguro de que deseas cerrar sesión?"),
-                                actions: [
-                                  TextButton(
-                                    child: const Text("Cancelar"),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(false),
-                                  ),
-                                  TextButton(
-                                    child: const Text("Cerrar sesión",
-                                        style: TextStyle(color: Colors.red)),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(true),
-                                  ),
-                                ],
-                              ),
-                            );
-
-                            if (confirm == true) {
-                              await FirebaseAuth.instance.signOut();
-                              if (context.mounted) {
-                                context.goNamed('LogInPage');
-                              }
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

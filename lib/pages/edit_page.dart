@@ -1,3 +1,5 @@
+// archivo completo con ajustes
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:swipemeet/pages/favorite_activities_selector.dart';
+import 'package:swipemeet/pages/spotify_search_page.dart';
 
 class EditWidget extends StatefulWidget {
   const EditWidget({super.key});
@@ -39,6 +42,8 @@ class _EditWidgetState extends State<EditWidget> {
 
   bool isLoading = false;
   List<String> photoUrls = ['', '', '', '', ''];
+  String _favoriteSong = '';
+  String _favoriteSong_Image = '';
 
   @override
   void initState() {
@@ -122,6 +127,9 @@ class _EditWidgetState extends State<EditWidget> {
           photoUrls[3] = doc['photo3'] ?? '';
           photoUrls[4] = doc['photo4'] ?? '';
           final born = doc['born_date'];
+          _favoriteSong = doc['favorite_song'] ?? '';
+          _favoriteSong_Image = doc['favorite_song_image'] ?? '';
+
           if (born != null && born.toString().isNotEmpty) {
             final parts = born.split('/');
             if (parts.length == 3) {
@@ -161,6 +169,9 @@ class _EditWidgetState extends State<EditWidget> {
         'photo3': photoUrls[3],
         'photo4': photoUrls[4],
         'description': _descriptionController.text,
+        'favorite_song': _favoriteSong,
+        'favorite_song_image': _favoriteSong_Image,
+
       }, SetOptions(merge: true));
     }
   }
@@ -579,7 +590,38 @@ class _EditWidgetState extends State<EditWidget> {
                         },
                       );
                     }).toList(),
-                  ),
+                  ),const SizedBox(height: 16),
+Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    const Text("Canción favorita",
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+    IconButton(
+      icon: const Icon(Icons.add, color: Color(0xFFAB82FF)),
+      onPressed: () async {
+        final result = await Navigator.push<Map<String, String>>(
+  context,
+  MaterialPageRoute(builder: (_) => const SpotifySearchPage()),
+);
+
+if (result != null) {
+  setState(() {
+    _favoriteSong = result['title'] ?? '';
+    _favoriteSong_Image = result['image'] ?? '';
+  });
+}
+
+      },
+    ),
+  ],
+),
+if (_favoriteSong.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(top: 8),
+    child: Text(_favoriteSong,
+        style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
+  ),
+
 
                   const SizedBox(height: 30),
                   SizedBox(
