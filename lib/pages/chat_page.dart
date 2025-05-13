@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
@@ -162,18 +163,22 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Text('SWIPEMEET', style: FlutterFlowTheme.swipeHeader),
             ),
-            Expanded( // Con esto cargo todas las salas abiertas
+            Expanded(
+              // Con esto cargo todas las salas abiertas
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('rooms')
                     .where('participantIds',
                         arrayContains: FirebaseAuth.instance.currentUser!.uid)
-                    .orderBy('updatedAt', descending: true) // Gracias a indexarlo, puedo ordenarlo en tiempo descendiente
+                    .orderBy('updatedAt',
+                        descending:
+                            true) // Gracias a indexarlo, puedo ordenarlo en tiempo descendiente
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(
-                        child: Text('No tienes conexiones aún')); // Si no hay salas muestro que no tiene conexiones
+                        child: Text(
+                            'No tienes conexiones aún')); // Si no hay salas muestro que no tiene conexiones
                   }
 
                   final List<ChatPreview> chats = [];
@@ -188,15 +193,18 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                     final hasUnread = hasUnreadMessage(
                         data, FirebaseAuth.instance.currentUser!.uid);
 
-                    chats.add(ChatPreview( // Añado tantos previews como salas hayan
+                    chats.add(ChatPreview(
+                      // Añado tantos previews como salas hayan
                       user: types.User(
                         id: otherUserId,
                         firstName: '...', // Cargo el nombre posteriormente
                         imageUrl: '', // Cargo la imagen posteriormente
                       ),
-                      lastMessage: data['lastMessage'] ?? '', // Cargo el ultimo mensaje que hay en bd, si no hay se mostrara espacio vacio
-                      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? 
-                          DateTime.now(), // Cargo la fecha del ultimo mensaje, si no hay mensajes aun, pongo la hora actual
+                      lastMessage: data['lastMessage'] ??
+                          '', // Cargo el ultimo mensaje que hay en bd, si no hay se mostrara espacio vacio
+                      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ??
+                          DateTime
+                              .now(), // Cargo la fecha del ultimo mensaje, si no hay mensajes aun, pongo la hora actual
                       roomId: doc.id,
                       hasUnread: hasUnread,
                     ));
@@ -220,8 +228,9 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                           final userDoc = userSnapshot.data!;
                           final user = types.User(
                             id: chat.user.id,
-                            firstName: userDoc['name'] ?? 'Usuario', // Aqui cargo el nombre
-                            imageUrl: userDoc['picture'] ?? 
+                            firstName: userDoc['name'] ??
+                                'Usuario', // Aqui cargo el nombre
+                            imageUrl: userDoc['picture'] ??
                                 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg', // Aqui cargo la imagen, si no hay pongo esa por fefecto
                           );
 
@@ -237,7 +246,8 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                                 CircleAvatar(
                                   backgroundImage: NetworkImage(user.imageUrl!),
                                 ),
-                                if (chat.hasUnread) // Si tiene mensajes sin leer muestro una burbujita roja al lado de la imagen del usuario
+                                if (chat
+                                    .hasUnread) // Si tiene mensajes sin leer muestro una burbujita roja al lado de la imagen del usuario
                                   Positioned(
                                     right: 0,
                                     top: 0,
@@ -290,7 +300,8 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomNavBar( // Navbar propia
+      bottomNavigationBar: CustomNavBar(
+        // Navbar propia
         currentIndex: _selectedIndex,
         onTap: _onNavItemTapped,
       ),
@@ -449,6 +460,17 @@ class _ChatPageState extends State<ChatPage> {
               });
 
               FirebaseChatCore.instance.sendMessage(message, widget.room.id);
+
+              // 👇 Aquí envías el evento a Firebase Analytics
+              await FirebaseAnalytics.instance.logEvent(
+                name: 'message_sent',
+                parameters: {
+                  'room_id': widget.room.id,
+                  'user_id': currentUserId,
+                  'message_length': message.text.length,
+                  'timestamp': DateTime.now().toIso8601String(),
+                },
+              );
             },
             user: types.User(id: FirebaseAuth.instance.currentUser!.uid),
           );

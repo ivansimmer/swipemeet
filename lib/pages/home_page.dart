@@ -1,15 +1,18 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:swipemeet/main.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
 import 'package:swipemeet/pages/ubication_service.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import 'home_page_model.dart';
 import '/flutter_flow/custom_navbar.dart';
 
 export 'home_page_model.dart';
+
+const Color pink300 = Color(0xFFF06292);
 
 class HomePageWidget extends StatefulWidget {
   const HomePageWidget({super.key});
@@ -34,6 +37,8 @@ class _HomePageWidgetState extends State<HomePageWidget>
   final PageController _pageController = PageController();
   int _currentPage = 0;
   List<Map<String, dynamic>> profiles = [];
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  double _swipeOffset = 0.0;
 
   @override
   void initState() {
@@ -42,6 +47,78 @@ class _HomePageWidgetState extends State<HomePageWidget>
     _model = FlutterFlowModel.createModel(context, () => HomePageModel());
     _cargarUbicacion();
     _fetchProfiles();
+    _pageController.addListener(() {
+      setState(() {
+        _swipeOffset =
+            _pageController.offset / MediaQuery.of(context).size.width;
+      });
+    });
+    _enviarEdadAFirebaseAnalytics();
+    logScreenView('HomePage');
+  }
+
+  Future<void> _establecerRangoEdadUsuario(int edad) async {
+    String rango = 'desconocido';
+
+    if (edad < 18) {
+      rango = 'menor_de_18';
+    } else if (edad <= 25) {
+      rango = '18_25';
+    } else if (edad <= 35) {
+      rango = '26_35';
+    } else if (edad <= 45) {
+      rango = '36_45';
+    } else if (edad <= 60) {
+      rango = '46_60';
+    } else {
+      rango = 'mayor_60';
+    }
+
+    await analytics.setUserProperty(name: 'age_range', value: rango);
+    debugPrint('🧾 Rango de edad establecido: $rango');
+  }
+
+  Future<void> _enviarEdadAFirebaseAnalytics() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        String bornDate = userDoc['born_date'] ?? '';
+        int edad = 0;
+
+        if (bornDate.isNotEmpty) {
+          List<String> dateParts = bornDate.split('/');
+          if (dateParts.length == 3) {
+            String formattedDate =
+                '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
+            DateTime birthDate = DateTime.parse(formattedDate);
+            DateTime today = DateTime.now();
+            edad = today.year - birthDate.year;
+            if (today.month < birthDate.month ||
+                (today.month == birthDate.month && today.day < birthDate.day)) {
+              edad--;
+            }
+          }
+        }
+
+        if (edad > 0) {
+          await analytics.logEvent(
+            name: 'user_age',
+            parameters: {'age': edad},
+          );
+
+          await _establecerRangoEdadUsuario(edad);
+
+          debugPrint('📊 Edad enviada a Firebase Analytics: $edad');
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Error al enviar edad a Analytics: $e");
+    }
   }
 
   @override
@@ -50,6 +127,45 @@ class _HomePageWidgetState extends State<HomePageWidget>
     _pageController.dispose();
     _model.dispose();
     super.dispose();
+  }
+
+  Future<void> _crearSalaChatSiNoExiste(
+      String currentUid, String targetUid) async {
+    try {
+      final chatsRef = FirebaseFirestore.instance.collection('rooms');
+
+      // Buscar una sala existente con estos dos usuarios
+      final existingChat = await chatsRef
+          .where('participantIds', arrayContains: currentUid)
+          .get();
+
+      bool salaExiste = false;
+      for (var doc in existingChat.docs) {
+        final List participantIds = doc['participantIds'];
+        if (participantIds.contains(targetUid) && participantIds.length == 2) {
+          salaExiste = true;
+          break;
+        }
+      }
+
+      // Si no existe, crearla
+      if (!salaExiste) {
+        await chatsRef.add({
+          'participantIds': [currentUid, targetUid],
+          'lastMessage': '',
+          'lastTimestamp': FieldValue.serverTimestamp(),
+          'seenBy': [false, false],
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'name': 'Sala de Chat',
+        });
+        debugPrint("✅ Sala de chat creada");
+      } else {
+        debugPrint("ℹ️ Sala de chat ya existe");
+      }
+    } catch (e) {
+      debugPrint("❌ Error al crear/verificar sala de chat: $e");
+    }
   }
 
   @override
@@ -118,6 +234,16 @@ class _HomePageWidgetState extends State<HomePageWidget>
       // Actualizar ubicación en Firestore si la ciudad ha sido obtenida
       if (ciudadPais.isNotEmpty) {
         await _actualizarUbicacionEnFirestore(ciudadPais);
+      }
+
+      // Enviar la ubicación a Firebase Analytics
+      if (ciudadPais.isNotEmpty) {
+        await analytics.logEvent(
+          name: 'user_location',
+          parameters: {
+            'city_country': ciudadPais,
+          },
+        );
       }
 
       setState(() {});
@@ -300,6 +426,8 @@ class _HomePageWidgetState extends State<HomePageWidget>
         setState(() {
           profiles[_currentPage]['isConnected'] = true;
         });
+
+        await _crearSalaChatSiNoExiste(currentUid, targetUid);
       } catch (e) {
         debugPrint("❌ Error al conectar: $e");
       }
@@ -319,67 +447,47 @@ class _HomePageWidgetState extends State<HomePageWidget>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Column(
+        bottom: false,
+        child: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 30),
-              child: Text(
-                'SWIPEMEET',
-                style: FlutterFlowTheme.swipeHeader,
-              ),
+            profiles.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : PageView.builder(
+                    controller: _pageController,
+                    itemCount: profiles.length,
+                    onPageChanged: (index) => setState(() {
+                      _currentPage = index;
+                    }),
+                    itemBuilder: (context, index) {
+                      return Transform(
+                        transform: Matrix4.identity()
+                          ..rotateZ((_swipeOffset - index) * 0.05),
+                        alignment: Alignment.center,
+                        child: _buildProfileCard(profiles[index]),
+                      );
+                    },
+                  ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: _buildBottomControls(),
             ),
-            Expanded(
-              child: profiles.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
-                  : PageView.builder(
-                      controller: _pageController,
-                      itemCount: profiles.length,
-                      onPageChanged: (index) => setState(() {
-                        if (index < profiles.length) {
-                          _currentPage = index;
-                        }
-                      }),
-                      itemBuilder: (context, index) {
-                        if (index < profiles.length) {
-                          return _buildProfileCard(profiles[index]);
-                        } else {
-                          return const SizedBox(); // Return an empty widget if index is out of bounds
-                        }
-                      },
-                    ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 50),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: (profiles.isEmpty || _currentPage == 0)
-                        ? null
-                        : _goToPreviousProfile,
-                    iconSize: 30,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.link),
-                    color: profiles.isNotEmpty &&
-                            profiles[_currentPage]['isConnected']
-                        ? Colors.blueAccent
-                        : Colors.grey, // Usamos el campo isConnected
-                    onPressed: profiles.isEmpty ? null : _connect,
-                    iconSize: 40,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: (profiles.isEmpty ||
-                            _currentPage >= profiles.length - 1)
-                        ? null
-                        : _goToNextProfile,
-                    iconSize: 30,
-                  ),
-                ],
+            Positioned(
+              top: -55,
+              left: 10,
+              child: Image.network(
+                'https://tindermonlau.blob.core.windows.net/imagenes/logo_swipe.png',
+                width: 150,
+                height: 150,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 150,
+                  height: 150,
+                  color: Colors.grey,
+                  child: const Center(child: Text('Logo unavailable')),
+                ),
               ),
             ),
           ],
@@ -392,92 +500,143 @@ class _HomePageWidgetState extends State<HomePageWidget>
     );
   }
 
+  Widget _buildBottomControls() {
+    final iconColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 30, color: iconColor),
+          onPressed: (profiles.isEmpty || _currentPage == 0)
+              ? null
+              : _goToPreviousProfile,
+        ),
+        const SizedBox(width: 30),
+        IconButton(
+          icon: Icon(Icons.link, size: 50, color: profiles.isNotEmpty &&
+                            profiles[_currentPage]['isConnected']
+                        ? Colors.blueAccent
+                        : Colors.grey,),
+          onPressed: profiles.isEmpty ? null : _connect,
+        ),
+        const SizedBox(width: 30),
+        IconButton(
+          icon: Icon(Icons.arrow_forward_ios, size: 30, color: iconColor),
+          onPressed: (profiles.isEmpty || _currentPage >= profiles.length - 1)
+              ? null
+              : _goToNextProfile,
+        ),
+      ],
+    );
+  }
+
   Widget _buildProfileCard(Map<String, dynamic> profile) {
     String defaultImageUrl =
         'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
     String imageUrl = profile['picture'] ?? defaultImageUrl;
     String bornDate = profile['born_date'] ?? 'Desconocido';
     int edad = 0;
+
     if (bornDate != 'Desconocido') {
       List<String> dateParts = bornDate.split('/');
       if (dateParts.length == 3) {
         String formattedDate =
             '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
-        DateTime fechaNacimiento = DateTime.parse(formattedDate);
-        DateTime fechaActual = DateTime.now();
-        edad = fechaActual.year - fechaNacimiento.year;
-        if (fechaActual.month < fechaNacimiento.month ||
-            (fechaActual.month == fechaNacimiento.month &&
-                fechaActual.day < fechaNacimiento.day)) {
+        DateTime birthDate = DateTime.parse(formattedDate);
+        DateTime today = DateTime.now();
+        edad = today.year - birthDate.year;
+        if (today.month < birthDate.month ||
+            (today.month == birthDate.month && today.day < birthDate.day)) {
           edad--;
         }
       }
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(left: 50, right: 50, top: 50),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
-              width: MediaQuery.of(context).size.width * 0.6,
-              height: MediaQuery.of(context).size.height * 0.3,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Image.network(
+    final textColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+    final subTextColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white70
+        : Colors.black54;
+
+    return Stack(
+      children: [
+        Positioned(
+          top: 50,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.network(
+                imageUrl,
+                width: 400,
+                height: 400,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Image.network(
                   defaultImageUrl,
-                  width: MediaQuery.of(context).size.width * 0.6,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  fit: BoxFit.cover),
-            ),
-          ),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 20)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                fit: FlexFit.loose,
-                child: Text(
-                  '${profile['name'] ?? 'Desconocido'}',
-                  style: FlutterFlowTheme.homePerfil,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                  width: 400,
+                  height: 400,
+                  fit: BoxFit.cover,
                 ),
               ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 100,
+          left: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                ', $edad',
-                style: FlutterFlowTheme.homePerfil,
+                '${profile['name'] ?? 'Desconocido'}, $edad',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(Icons.alternate_email, color: subTextColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    profile['university'] ?? 'Desconocido',
+                    style: TextStyle(color: subTextColor, fontSize: 14),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.location_on, color: subTextColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    profile['ubicacion'] ?? 'Ubicación desconocida',
+                    style: TextStyle(color: subTextColor, fontSize: 14),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.school, color: subTextColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    profile['studies'] ?? 'Desconocido',
+                    style: TextStyle(color: subTextColor, fontSize: 14),
+                  ),
+                ],
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.location_city_outlined),
-              SizedBox(width: 10),
-              Text(profile['university'] ?? 'Desconocido')
-            ]
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.school),
-              SizedBox(width: 10),
-              Text(profile['studies'] ?? 'Desconocido')
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.location_on),
-              SizedBox(width: 10),
-              Text(profile['ubicacion'] ?? 'Ubicacion desconocida')
-            ],
-          )  
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
