@@ -1,5 +1,4 @@
 // archivo completo con ajustes
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -27,8 +26,6 @@ class EditWidget extends StatefulWidget {
 class _EditWidgetState extends State<EditWidget> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _universityController = TextEditingController();
-  final TextEditingController _studiesController = TextEditingController();
   final TextEditingController _academicInterestsController =
       TextEditingController();
   final TextEditingController _academicInterestInputController =
@@ -45,6 +42,32 @@ class _EditWidgetState extends State<EditWidget> {
   String _favoriteSong = '';
   String _favoriteSong_Image = '';
 
+  final List<String> estudiosItems = [
+    'Ciencias',
+    'Informatica',
+    'Ciencias Sociales',
+    'Matematicas',
+    'Ciencias de la Salud',
+    'Humanidades',
+    'Ingenieria',
+    'Economia',
+    'Artes',
+    'Otro',
+  ];
+
+  final List<String> escuelaItems = [
+    'Monlau Centre d\'Estudis',
+    'UPC',
+    'UB',
+    'UPF',
+    'UAB',
+    'ESADE',
+    'LA SALLE',
+  ];
+
+  String? selectedEstudio;
+  String? selectedEscuela;
+
   @override
   void initState() {
     super.initState();
@@ -56,8 +79,6 @@ class _EditWidgetState extends State<EditWidget> {
     _tagFocusNode.dispose();
     _nameController.dispose();
     _descriptionController.dispose();
-    _universityController.dispose();
-    _studiesController.dispose();
     _academicInterestsController.dispose();
     _academicInterestInputController.dispose();
     super.dispose();
@@ -99,8 +120,23 @@ class _EditWidgetState extends State<EditWidget> {
         if (doc.exists) {
           _nameController.text = doc['name'] ?? '';
           _descriptionController.text = doc['description'] ?? '';
-          _universityController.text = doc['university'] ?? '';
-          _studiesController.text = doc['studies'] ?? '';
+
+          // Validar valor seleccionado para escuela
+          String? escuela = doc['university'];
+          if (escuelaItems.contains(escuela)) {
+            selectedEscuela = escuela;
+          } else {
+            selectedEscuela = null;
+          }
+
+          // Validar valor seleccionado para estudio
+          String? estudio = doc['studies'];
+          if (estudiosItems.contains(estudio)) {
+            selectedEstudio = estudio;
+          } else {
+            selectedEstudio = null;
+          }
+
           final rawInterests = doc['academic_interests'];
           if (rawInterests is String) {
             _academicInterests = rawInterests
@@ -158,8 +194,8 @@ class _EditWidgetState extends State<EditWidget> {
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'name': _nameController.text,
-        'university': _universityController.text,
-        'studies': _studiesController.text,
+        'university': selectedEscuela,
+        'studies': selectedEstudio,
         'academic_interests': _academicInterests,
         'favorite_activities': _selectedActivities,
         'born_date': formattedDate,
@@ -171,7 +207,6 @@ class _EditWidgetState extends State<EditWidget> {
         'description': _descriptionController.text,
         'favorite_song': _favoriteSong,
         'favorite_song_image': _favoriteSong_Image,
-
       }, SetOptions(merge: true));
     }
   }
@@ -396,17 +431,49 @@ class _EditWidgetState extends State<EditWidget> {
                     hint: "Ej. Me gusta viajar y conocer gente nueva",
                   ),
                   const SizedBox(height: 16),
-                  _buildStyledTextField(
-                    context: context,
-                    controller: _universityController,
-                    label: "Escuela",
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: "Escuela",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    value: selectedEscuela,
+                    items: escuelaItems.map((escuela) {
+                      return DropdownMenuItem(
+                        value: escuela,
+                        child: Text(escuela),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedEscuela = value;
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
-                  _buildStyledTextField(
-                    context: context,
-                    controller: _studiesController,
-                    label: "Estudios",
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: "Estudios",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    value: selectedEstudio,
+                    items: estudiosItems.map((estudio) {
+                      return DropdownMenuItem(
+                        value: estudio,
+                        child: Text(estudio),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedEstudio = value;
+                      });
+                    },
                   ),
+                  const SizedBox(height: 16),
                   const SizedBox(height: 16),
                   GestureDetector(
                     onTap: () async {
@@ -590,38 +657,41 @@ class _EditWidgetState extends State<EditWidget> {
                         },
                       );
                     }).toList(),
-                  ),const SizedBox(height: 16),
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    const Text("Canción favorita",
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-    IconButton(
-      icon: const Icon(Icons.add, color: Color(0xFFAB82FF)),
-      onPressed: () async {
-        final result = await Navigator.push<Map<String, String>>(
-  context,
-  MaterialPageRoute(builder: (_) => const SpotifySearchPage()),
-);
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Canción favorita",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18)),
+                      IconButton(
+                        icon: const Icon(Icons.add, color: Color(0xFFAB82FF)),
+                        onPressed: () async {
+                          final result =
+                              await Navigator.push<Map<String, String>>(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SpotifySearchPage()),
+                          );
 
-if (result != null) {
-  setState(() {
-    _favoriteSong = result['title'] ?? '';
-    _favoriteSong_Image = result['image'] ?? '';
-  });
-}
-
-      },
-    ),
-  ],
-),
-if (_favoriteSong.isNotEmpty)
-  Padding(
-    padding: const EdgeInsets.only(top: 8),
-    child: Text(_favoriteSong,
-        style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-  ),
-
+                          if (result != null) {
+                            setState(() {
+                              _favoriteSong = result['title'] ?? '';
+                              _favoriteSong_Image = result['image'] ?? '';
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  if (_favoriteSong.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(_favoriteSong,
+                          style: const TextStyle(
+                              fontSize: 14, fontStyle: FontStyle.italic)),
+                    ),
 
                   const SizedBox(height: 30),
                   SizedBox(
@@ -649,11 +719,11 @@ if (_favoriteSong.isNotEmpty)
                               "Debes subir al menos 2 fotos adicionales.");
                           return;
                         }
-                        if (_universityController.text.trim().isEmpty) {
+                        if (selectedEscuela == null) {
                           _showError("La escuela es obligatoria.");
                           return;
                         }
-                        if (_studiesController.text.trim().isEmpty) {
+                        if (selectedEstudio == null) {
                           _showError("Los estudios son obligatorios.");
                           return;
                         }
