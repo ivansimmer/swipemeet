@@ -7,7 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:swipemeet/flutter_flow/custom_navbar.dart';
 
 class ProfilePageWidget extends StatefulWidget {
-  const ProfilePageWidget({super.key});
+  final String? uid;
+  const ProfilePageWidget({Key? key, this.uid}) : super(key: key);
 
   static String routeName = 'ProfilePage';
   static String routePath = '/profilePage';
@@ -93,14 +94,11 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
 
   Future<void> _loadUserData() async {
     setState(() => isLoading = true);
-    final user = FirebaseAuth.instance.currentUser;
+    final userId = widget.uid ?? FirebaseAuth.instance.currentUser?.uid;  
 
-    if (user != null) {
+    if (userId != null) {
       try {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
+        final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
         if (doc.exists) {
           setState(() {
             name = doc['name'] ?? '';

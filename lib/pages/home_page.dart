@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:swipemeet/main.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
+import 'package:swipemeet/pages/profile_detail_page.dart';
 import 'package:swipemeet/pages/ubication_service.dart';
 import 'home_page_model.dart';
 import '/flutter_flow/custom_navbar.dart';
@@ -447,7 +448,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      key: scaffoldKey,
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -516,10 +517,13 @@ class _HomePageWidgetState extends State<HomePageWidget>
         ),
         const SizedBox(width: 30),
         IconButton(
-          icon: Icon(Icons.link, size: 50, color: profiles.isNotEmpty &&
-                            profiles[_currentPage]['isConnected']
-                        ? Colors.blueAccent
-                        : Colors.grey,),
+          icon: Icon(
+            Icons.link,
+            size: 50,
+            color: profiles.isNotEmpty && profiles[_currentPage]['isConnected']
+                ? Colors.blueAccent
+                : Colors.grey,
+          ),
           onPressed: profiles.isEmpty ? null : _connect,
         ),
         const SizedBox(width: 30),
@@ -562,81 +566,98 @@ class _HomePageWidgetState extends State<HomePageWidget>
         ? Colors.white70
         : Colors.black54;
 
-    return Stack(
-      children: [
-        Positioned(
-          top: 50,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                imageUrl,
-                width: 400,
-                height: 400,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Image.network(
-                  defaultImageUrl,
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (_) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(12),
+            child: SizedBox(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.95,
+              child: ProfileDetailPageWidget(profile: profile),
+            ),
+          ),
+        );
+      },
+      child: Stack(
+        children: [
+          Positioned(
+            top: 50,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  imageUrl,
                   width: 400,
                   height: 400,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.network(
+                    defaultImageUrl,
+                    width: 400,
+                    height: 400,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: 20,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${profile['name'] ?? 'Desconocido'}, $edad',
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
+          Positioned(
+            bottom: 100,
+            left: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${profile['name'] ?? 'Desconocido'}, $edad',
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Icon(Icons.alternate_email, color: subTextColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    profile['university'] ?? 'Desconocido',
-                    style: TextStyle(color: subTextColor, fontSize: 14),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.location_on, color: subTextColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    profile['ubicacion'] ?? 'Ubicación desconocida',
-                    style: TextStyle(color: subTextColor, fontSize: 14),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.school, color: subTextColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    profile['studies'] ?? 'Desconocido',
-                    style: TextStyle(color: subTextColor, fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Icon(Icons.alternate_email, color: subTextColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      profile['university'] ?? 'Desconocido',
+                      style: TextStyle(color: subTextColor, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.location_on, color: subTextColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      profile['ubicacion'] ?? 'Ubicación desconocida',
+                      style: TextStyle(color: subTextColor, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.school, color: subTextColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      profile['studies'] ?? 'Desconocido',
+                      style: TextStyle(color: subTextColor, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
