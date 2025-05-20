@@ -72,6 +72,9 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
         context.goNamed('ChatPage');
         break;
       case 2:
+        context.goNamed('CommunitiesPage');
+        break;
+      case 3:
         context.goNamed('ProfilePage');
         break;
     }
@@ -301,10 +304,13 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
         ),
       ),
       bottomNavigationBar: CustomNavBar(
-        // Navbar propia
-        currentIndex: _selectedIndex,
-        onTap: _onNavItemTapped,
-      ),
+  currentIndex: _selectedIndex,
+  onTap: _onNavItemTapped,
+  profileImageUrl: picture.isNotEmpty
+      ? picture
+      : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+),
+
     );
   }
 

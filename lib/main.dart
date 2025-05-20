@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:swipemeet/auth/firebase_auth/auth_check.dart';
 import 'package:swipemeet/flutter_flow/flutter_flow_theme_provider.dart';
 import 'package:swipemeet/flutter_flow/tracking_wrapper.dart';
+import 'package:swipemeet/pages/communities_page_model.dart';
+import 'package:swipemeet/pages/discover_communities.dart';
 import 'package:swipemeet/pages/edit_page.dart';
 import 'package:swipemeet/pages/interests_page.dart';
 import 'pages/start_page.dart';
@@ -18,6 +20,7 @@ import 'pages/home_page.dart';
 import 'pages/chat_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/pass_page.dart';
+import 'pages/communities_page.dart';
 
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
@@ -249,5 +252,29 @@ final GoRouter _router = GoRouter(
         child: EditWidget(),
       ),
     ),
+    GoRoute(
+      name: 'CommunitiesPage',
+      path: '/communitiesPage',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: CommunitiesPageWidget(
+          screenName: 'CommunitiesPage',
+          child: CommunitiesWidget(),
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            child,
+      ),
+    ),
+    GoRoute(
+      path: '/discover_communities',
+      name: 'DiscoverCommunities',
+      builder: (context, state) => const ScreenTrackingWrapper(
+        screenName: 'DiscoverCommunities',
+        child: DiscoverCommunitiesWidget(),
+      ),
+    ),
+
   ],
 );
+
+

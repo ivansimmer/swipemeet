@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,6 +12,7 @@ import 'package:swipemeet/pages/profile_detail_page.dart';
 import 'package:swipemeet/pages/ubication_service.dart';
 import 'home_page_model.dart';
 import '/flutter_flow/custom_navbar.dart';
+import 'package:http/http.dart' as http;
 
 export 'home_page_model.dart';
 
@@ -31,6 +34,8 @@ class _HomePageWidgetState extends State<HomePageWidget>
   String ciudadPais = '';
   bool _alertaMostrada = false;
   bool _permisoSolicitado = false;
+  String picture = '';
+
 
   late HomePageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -56,7 +61,68 @@ class _HomePageWidgetState extends State<HomePageWidget>
     });
     _enviarEdadAFirebaseAnalytics();
     logScreenView('HomePage');
+    _loadCurrentUserProfile();
+    asignarUsuarioAComunidades(); // 👈 Esto faltaba
+
+
   }
+  Future<void> asignarUsuarioAComunidades() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+  if (!doc.exists) return;
+
+  final userData = doc.data()!;
+  final escuela = userData['university'] ?? '';
+  final estudio = userData['studies'] ?? '';
+
+  final batch = FirebaseFirestore.instance.batch();
+
+  Future<void> agregarASala(String comunidadId) async {
+    final ref = FirebaseFirestore.instance.collection('communities').doc(comunidadId);
+    final snap = await ref.get();
+    if (snap.exists) {
+      final users = List<String>.from(snap.data()?['users'] ?? []);
+      if (!users.contains(user.uid)) {
+        batch.update(ref, {
+          'users': FieldValue.arrayUnion([user.uid]),
+        });
+      }
+    }
+  }
+
+  if (escuela.isNotEmpty) {
+    await agregarASala(escuela);
+  }
+
+  if (estudio.isNotEmpty) {
+    await agregarASala(estudio);
+  }
+
+  await batch.commit();
+}
+
+
+  Future<void> _loadCurrentUserProfile() async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser == null) return;
+
+  try {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .get();
+
+    if (doc.exists) {
+      setState(() {
+        picture = doc['picture'] ?? '';
+      });
+    }
+  } catch (e) {
+    debugPrint("❌ Error al cargar perfil del usuario: $e");
+  }
+}
 
   Future<void> _establecerRangoEdadUsuario(int edad) async {
     String rango = 'desconocido';
@@ -304,40 +370,38 @@ class _HomePageWidgetState extends State<HomePageWidget>
 
   Future<void> _fetchProfiles() async {
     try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        QuerySnapshot snapshot =
-            await FirebaseFirestore.instance.collection('users').get();
-        List<Map<String, dynamic>> profilesList = snapshot.docs
-            .where((doc) => doc['email'] != currentUser.email)
-            .map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          data['uid'] = doc.id;
-          return data;
-        }).toList();
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
 
-        // Verifying connections
-        for (var profile in profilesList) {
-          String targetUid = profile['uid'];
-          DocumentSnapshot targetUserDoc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(targetUid)
-              .get();
-          List targetConnections = targetUserDoc['connections'] ?? [];
-          profile['isConnected'] = targetConnections.contains(currentUser.uid);
-        }
+      final response = await http.post(
+        Uri.parse('https://recomendador-ia-g04z.onrender.com/recomendar'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'uid': currentUser.uid}),
+      );
 
+      print("⏳ STATUS: ${response.statusCode}");
+      print("📥 BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
         setState(() {
-          profiles = profilesList; // Only update the list once data is fetched
+          profiles = data.map((e) => Map<String, dynamic>.from(e)).toList();
         });
+      } else {
+        throw Exception('Error en la respuesta de la IA');
       }
-    } catch (e) {
-      debugPrint("Error al obtener perfiles: $e");
+    } catch (e, s) {
+      debugPrint("❌ Error al obtener recomendaciones de IA: $e");
+      debugPrint("📛 Stacktrace: $s");
+
+      if (!mounted) return;
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Error'),
-          content: const Text('¡Ha habido un error al cargar los perfiles!'),
+          content:
+              const Text('No se pudieron cargar los perfiles recomendados.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -361,6 +425,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
         context.goNamed('ChatPage');
         break;
       case 2:
+        context.goNamed('CommunitiesPage');
+        break;
+      case 3:
         context.goNamed('ProfilePage');
         break;
     }
@@ -495,9 +562,13 @@ class _HomePageWidgetState extends State<HomePageWidget>
         ),
       ),
       bottomNavigationBar: CustomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavItemTapped,
-      ),
+  currentIndex: _selectedIndex,
+  onTap: _onNavItemTapped,
+  profileImageUrl: picture.isNotEmpty
+      ? picture
+      : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+),
+
     );
   }
 
@@ -516,15 +587,34 @@ class _HomePageWidgetState extends State<HomePageWidget>
               : _goToPreviousProfile,
         ),
         const SizedBox(width: 30),
-        IconButton(
+        ElevatedButton.icon(
           icon: Icon(
-            Icons.link,
-            size: 50,
-            color: profiles.isNotEmpty && profiles[_currentPage]['isConnected']
-                ? Colors.blueAccent
-                : Colors.grey,
+            profiles.isNotEmpty &&
+                    (profiles[_currentPage]['isConnected'] ?? false)
+                ? Icons.check_circle
+                : Icons.person_add_alt,
+            color: Colors.white,
           ),
-          onPressed: profiles.isEmpty ? null : _connect,
+          label: Text(
+            profiles.isNotEmpty &&
+                    (profiles[_currentPage]['isConnected'] ?? false)
+                ? "Conectado"
+                : "Conectar",
+            style: const TextStyle(color: Colors.white),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: profiles.isNotEmpty &&
+                    (profiles[_currentPage]['isConnected'] ?? false)
+                ? Colors.green
+                : Colors.blueAccent,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          ),
+          onPressed: profiles.isEmpty ||
+                  (profiles[_currentPage]['isConnected'] ?? false)
+              ? null
+              : _connect,
         ),
         const SizedBox(width: 30),
         IconButton(
@@ -558,6 +648,9 @@ class _HomePageWidgetState extends State<HomePageWidget>
         }
       }
     }
+
+    double similarity = (profile['similarity'] ?? 0.0) as double;
+    int porcentaje = (similarity * 100).round();
 
     final textColor = Theme.of(context).brightness == Brightness.dark
         ? Colors.white
@@ -609,6 +702,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
           Positioned(
             bottom: 100,
             left: 20,
+            right: 20,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -619,6 +713,23 @@ class _HomePageWidgetState extends State<HomePageWidget>
                     fontWeight: FontWeight.w600,
                     color: textColor,
                   ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Afinidad: $porcentaje%',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                LinearProgressIndicator(
+                  value: similarity.clamp(0.0, 1.0),
+                  minHeight: 6,
+                  backgroundColor: Colors.grey[300],
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFFAB82FF)),
                 ),
                 const SizedBox(height: 20),
                 Row(
