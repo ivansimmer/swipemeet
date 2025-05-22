@@ -61,9 +61,7 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
   }
 
   void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
     switch (index) {
       case 0:
         context.goNamed('HomePage');
@@ -75,6 +73,16 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
         context.goNamed('CommunitiesPage');
         break;
       case 3:
+      context.goNamed(
+        'MarketplacePage',
+        extra: {
+          'profileImageUrl': picture.isNotEmpty
+              ? picture
+              : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+        },
+      );
+      break;  
+      case 4:
         context.goNamed('ProfilePage');
         break;
     }
@@ -116,6 +124,62 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
 
     return !seenBy[index];
   }
+  Future<void> _confirmDeleteChat(String roomId, String otherUserId) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Eliminar chat'),
+      content: const Text(
+          '¿Estás seguro de que deseas eliminar este chat y la conexión? Esta acción eliminará también todos los mensajes.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Eliminar'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm == true) {
+    try {
+      final firestore = FirebaseFirestore.instance;
+
+      // Eliminar mensajes de la subcolección
+      final messagesRef = firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('messages');
+
+      final messagesSnapshot = await messagesRef.get();
+
+      for (final doc in messagesSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      // Eliminar la sala
+      await firestore.collection('rooms').doc(roomId).delete();
+
+      // Eliminar el match
+      final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      final matchId = [currentUserId, otherUserId]..sort();
+      final matchDocId = matchId.join('_');
+
+      await firestore.collection('matches').doc(matchDocId).delete();
+
+      // 🟢 Ya no hay SnackBar aquí
+    } catch (e) {
+      debugPrint('Error eliminando chat y mensajes: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al eliminar el chat.')),
+      );
+    }
+  }
+}
+
 
   // Uso esta funcion para cargar toda la informacion del usuario como correo, nombre, etc
   Future<void> _loadUserData() async {
@@ -159,14 +223,31 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       key: scaffoldKey,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Text('SWIPEMEET', style: FlutterFlowTheme.swipeHeader),
-            ),
-            Expanded(
+      appBar: AppBar(
+  automaticallyImplyLeading: false,
+  toolbarHeight: 50,
+  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+  elevation: 0,
+  title: Align(
+    alignment: Alignment.centerLeft,
+    child: Image.network(
+      'https://tindermonlau.blob.core.windows.net/imagenes/logo_swipe.png',
+      height: 150,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: 150,
+        height: 150,
+        color: Colors.grey,
+        child: const Center(child: Text('Logo unavailable')),
+      ),
+    ),
+  ),
+),
+body: SafeArea(
+  child: Column(
+    children: [
+      Expanded(
+
               // Con esto cargo todas las salas abiertas
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -244,55 +325,51 @@ class _ChatPageWidgetState extends State<ChatPageWidget> {
                           );
 
                           return ListTile(
-                            leading: Stack(
-                              children: [
-                                CircleAvatar(
-                                  backgroundImage: NetworkImage(user.imageUrl!),
-                                ),
-                                if (chat
-                                    .hasUnread) // Si tiene mensajes sin leer muestro una burbujita roja al lado de la imagen del usuario
-                                  Positioned(
-                                    right: 0,
-                                    top: 0,
-                                    child: Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            title: Text(
-                              user.firstName ?? 'Usuario',
-                              style: FlutterFlowTheme.headlineSmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              chat.lastMessage,
-                              style: TextStyle(
-                                fontWeight: isUnread
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: Text(
-                              TimeOfDay.fromDateTime(chat.updatedAt)
-                                  .format(context),
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                            onTap: () async {
-                              await markRoomAsSeen(chat.roomId,
-                                  FirebaseAuth.instance.currentUser!.uid);
-                              _openChatWithUser(user);
-                            },
-                          );
+  leading: Stack(
+    children: [
+      CircleAvatar(
+        backgroundImage: NetworkImage(user.imageUrl!),
+      ),
+      if (chat.hasUnread)
+        Positioned(
+          right: 0,
+          top: 0,
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: const BoxDecoration(
+              color: Colors.red,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+    ],
+  ),
+  title: Text(
+    user.firstName ?? 'Usuario',
+    style: FlutterFlowTheme.headlineSmall,
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+  ),
+  subtitle: Text(
+    chat.lastMessage,
+    style: TextStyle(
+      fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
+    ),
+    maxLines: 1,
+    overflow: TextOverflow.ellipsis,
+  ),
+  trailing: Text(
+    TimeOfDay.fromDateTime(chat.updatedAt).format(context),
+    style: const TextStyle(fontSize: 12, color: Colors.grey),
+  ),
+  onTap: () async {
+    await markRoomAsSeen(chat.roomId, FirebaseAuth.instance.currentUser!.uid);
+    _openChatWithUser(user);
+  },
+  onLongPress: () => _confirmDeleteChat(chat.roomId, chat.user.id), // ✅ Aquí sí
+);
+
                         },
                       );
                     },
@@ -380,6 +457,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   String otherUserName = 'Cargando...';
+  String otherUserImage = '';
 
   @override
   void initState() {
@@ -420,67 +498,77 @@ class _ChatPageState extends State<ChatPage> {
         .get();
 
     if (userDoc.exists) {
-      setState(() {
-        otherUserName = userDoc['name'] ?? 'Usuario desconocido';
-      });
-    }
+  setState(() {
+    otherUserName = userDoc['name'] ?? 'Usuario desconocido';
+    otherUserImage = userDoc['picture'] ??
+        'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
+  });
+}
+
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(otherUserName.isEmpty ? 'Cargando...' : otherUserName),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+  automaticallyImplyLeading: true,
+  toolbarHeight: 60,
+  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+  elevation: 0,
+  title: Row(
+    children: [
+      CircleAvatar(
+        radius: 20,
+        backgroundImage: NetworkImage(otherUserImage),
       ),
+      const SizedBox(width: 12),
+      Text(
+        otherUserName,
+        style: Theme.of(context).textTheme.titleMedium,
+        overflow: TextOverflow.ellipsis,
+      ),
+    ],
+  ),
+),
+
+
+
       body: StreamBuilder<List<types.Message>>(
         stream: FirebaseChatCore.instance.messages(widget.room),
         builder: (context, snapshot) {
-          return Chat(
-            messages: snapshot.data ?? [],
-            onSendPressed: (types.PartialText message) async {
-              final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  return Chat(
+    messages: snapshot.data ?? [],
+    onSendPressed: (types.PartialText message) async {
+      await FirebaseFirestore.instance
+    .collection('rooms')
+    .doc(widget.room.id)
+    .collection('messages')
+    .add({
+  'authorId': FirebaseAuth.instance.currentUser!.uid,
+  'createdAt': FieldValue.serverTimestamp(),
+  'text': message.text,
+  'type': 'text',
+});
 
-              final roomDoc = FirebaseFirestore.instance
-                  .collection('rooms')
-                  .doc(widget.room.id);
+    },
+    user: types.User(id: FirebaseAuth.instance.currentUser!.uid),
+    l10n: const ChatL10nEn(inputPlaceholder: 'Envía un mensaje'),
+    theme: DefaultChatTheme(
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF1A1A1A)
+          : const Color(0xFFF5F5F5),
+      inputBackgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.grey.shade700
+          : Colors.grey.shade200,
+      inputBorderRadius: BorderRadius.circular(24),
+      inputTextColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : Colors.black,
+      inputTextStyle: const TextStyle(fontSize: 15),
+    ),
+  );
+},
 
-              final roomSnap = await roomDoc.get();
-              final data = roomSnap.data();
-              if (data == null) return;
-
-              final participantIds =
-                  List<String>.from(data['participantIds'] ?? []);
-              final seenBy =
-                  participantIds.map((id) => id == currentUserId).toList();
-
-              await roomDoc.update({
-                'lastMessage': message.text,
-                'updatedAt': FieldValue.serverTimestamp(),
-                'seenBy': seenBy,
-              });
-
-              FirebaseChatCore.instance.sendMessage(message, widget.room.id);
-
-              // 👇 Aquí envías el evento a Firebase Analytics
-              await FirebaseAnalytics.instance.logEvent(
-                name: 'message_sent',
-                parameters: {
-                  'room_id': widget.room.id,
-                  'user_id': currentUserId,
-                  'message_length': message.text.length,
-                  'timestamp': DateTime.now().toIso8601String(),
-                },
-              );
-            },
-            user: types.User(id: FirebaseAuth.instance.currentUser!.uid),
-          );
-        },
       ),
     );
   }

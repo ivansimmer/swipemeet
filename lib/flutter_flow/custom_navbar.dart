@@ -25,6 +25,7 @@ class CustomNavBar extends StatelessWidget {
         const Icon(Icons.home, size: 30),
         const Icon(Icons.chat, size: 30),
         const Icon(Icons.groups, size: 30),
+        const Icon(Icons.shopping_bag, size: 30),
         CircleAvatar(
           radius: 16,
           backgroundImage: NetworkImage(profileImageUrl),

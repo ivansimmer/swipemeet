@@ -10,7 +10,7 @@ import 'package:swipemeet/main.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
 import 'package:swipemeet/pages/profile_detail_page.dart';
 import 'package:swipemeet/pages/ubication_service.dart';
-import 'home_page_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/flutter_flow/custom_navbar.dart';
 import 'package:http/http.dart' as http;
 
@@ -28,6 +28,13 @@ class HomePageWidget extends StatefulWidget {
   State<HomePageWidget> createState() => _HomePageWidgetState();
 }
 
+class HomePageModel extends FlutterFlowModel {
+  double matchScale = 1.0;
+
+  @override
+  void dispose() {}
+}
+
 class _HomePageWidgetState extends State<HomePageWidget>
     with WidgetsBindingObserver {
   Position? ubicacion;
@@ -35,7 +42,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
   bool _alertaMostrada = false;
   bool _permisoSolicitado = false;
   String picture = '';
-
+  bool _modoIA = false;
 
   late HomePageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -45,84 +52,130 @@ class _HomePageWidgetState extends State<HomePageWidget>
   List<Map<String, dynamic>> profiles = [];
   FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   double _swipeOffset = 0.0;
+  bool _isFetching = false;
+  bool _cancelarIA = false;
+
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _model = FlutterFlowModel.createModel(context, () => HomePageModel());
+
+    _modoIA = false; // ← Forzar modo básico al inicio
+    _fetchProfiles(); // ← Cargar perfiles por coincidencias simples
+
     _cargarUbicacion();
-    _fetchProfiles();
+    _enviarEdadAFirebaseAnalytics();
+    logScreenView('HomePage');
+    _loadCurrentUserProfile();
+    asignarUsuarioAComunidades();
     _pageController.addListener(() {
       setState(() {
         _swipeOffset =
             _pageController.offset / MediaQuery.of(context).size.width;
       });
     });
-    _enviarEdadAFirebaseAnalytics();
-    logScreenView('HomePage');
-    _loadCurrentUserProfile();
-    asignarUsuarioAComunidades(); // 👈 Esto faltaba
 
-
+    Future.delayed(const Duration(seconds: 10), () {
+      if (!mounted || profiles.isNotEmpty) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Cargando...'),
+          content: const Text(
+              'Tarda más de lo normal en cargar. Verifica tu conexión a internet.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (mounted) Navigator.pop(context);
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        ),
+      );
+    });
   }
-  Future<void> asignarUsuarioAComunidades() async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
 
-  final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-  if (!doc.exists) return;
+  Future<void> _cargarPerfilesDesdeCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cachedData = prefs.getString('cached_profiles');
 
-  final userData = doc.data()!;
-  final escuela = userData['university'] ?? '';
-  final estudio = userData['studies'] ?? '';
-
-  final batch = FirebaseFirestore.instance.batch();
-
-  Future<void> agregarASala(String comunidadId) async {
-    final ref = FirebaseFirestore.instance.collection('communities').doc(comunidadId);
-    final snap = await ref.get();
-    if (snap.exists) {
-      final users = List<String>.from(snap.data()?['users'] ?? []);
-      if (!users.contains(user.uid)) {
-        batch.update(ref, {
-          'users': FieldValue.arrayUnion([user.uid]),
+    if (cachedData != null) {
+      try {
+        final List<dynamic> data = jsonDecode(cachedData);
+        if (!mounted) return;
+        setState(() {
+          profiles = data.map((e) => Map<String, dynamic>.from(e)).toList();
         });
+      } catch (e) {
+        debugPrint("⚠️ Error al cargar perfiles en caché: $e");
       }
     }
   }
 
-  if (escuela.isNotEmpty) {
-    await agregarASala(escuela);
-  }
+  Future<void> asignarUsuarioAComunidades() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-  if (estudio.isNotEmpty) {
-    await agregarASala(estudio);
-  }
-
-  await batch.commit();
-}
-
-
-  Future<void> _loadCurrentUserProfile() async {
-  final currentUser = FirebaseAuth.instance.currentUser;
-  if (currentUser == null) return;
-
-  try {
     final doc = await FirebaseFirestore.instance
         .collection('users')
-        .doc(currentUser.uid)
+        .doc(user.uid)
         .get();
+    if (!doc.exists) return;
 
-    if (doc.exists) {
-      setState(() {
-        picture = doc['picture'] ?? '';
-      });
+    final userData = doc.data()!;
+    final escuela = userData['university'] ?? '';
+    final estudio = userData['studies'] ?? '';
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    Future<void> agregarASala(String comunidadId) async {
+      final ref =
+          FirebaseFirestore.instance.collection('communities').doc(comunidadId);
+      final snap = await ref.get();
+      if (snap.exists) {
+        final users = List<String>.from(snap.data()?['users'] ?? []);
+        if (!users.contains(user.uid)) {
+          batch.update(ref, {
+            'users': FieldValue.arrayUnion([user.uid]),
+          });
+        }
+      }
     }
-  } catch (e) {
-    debugPrint("❌ Error al cargar perfil del usuario: $e");
+
+    if (escuela.isNotEmpty) {
+      await agregarASala(escuela);
+    }
+
+    if (estudio.isNotEmpty) {
+      await agregarASala(estudio);
+    }
+
+    await batch.commit();
   }
-}
+
+  Future<void> _loadCurrentUserProfile() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      if (doc.exists) {
+        if (!mounted) return;
+        setState(() {
+          picture = doc['picture'] ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint("❌ Error al cargar perfil del usuario: $e");
+    }
+  }
 
   Future<void> _establecerRangoEdadUsuario(int edad) async {
     String rango = 'desconocido';
@@ -281,6 +334,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
           await UbicacionService.cargarUbicacionGuardada();
 
       if (ubicacionGuardada != null) {
+        if (!mounted) return;
         setState(() => ubicacion = ubicacionGuardada);
         ciudadPais = await UbicacionService.obtenerCiudadPais(
           ubicacion!.latitude,
@@ -290,6 +344,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
         Position? nuevaUbicacion =
             await UbicacionService.obtenerUbicacion(context);
         if (nuevaUbicacion != null) {
+          if (!mounted) return;
           setState(() => ubicacion = nuevaUbicacion);
           ciudadPais = await UbicacionService.obtenerCiudadPais(
             nuevaUbicacion.latitude,
@@ -312,7 +367,7 @@ class _HomePageWidgetState extends State<HomePageWidget>
           },
         );
       }
-
+      if (!mounted) return;
       setState(() {});
     } catch (e) {
       print("❌ Error al cargar ubicación: $e");
@@ -368,55 +423,179 @@ class _HomePageWidgetState extends State<HomePageWidget>
     );
   }
 
+  // En tu HomePageWidget dentro de _fetchProfiles()
+// ... [código inicial sin cambios anteriores]
+
+// Sustituir _fetchProfiles con la nueva lógica
   Future<void> _fetchProfiles() async {
-    try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
+  if (_isFetching) return;
+  _isFetching = true;
 
-      final response = await http.post(
-        Uri.parse('https://recomendador-ia-g04z.onrender.com/recomendar'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'uid': currentUser.uid}),
-      );
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
 
-      print("⏳ STATUS: ${response.statusCode}");
-      print("📥 BODY: ${response.body}");
+    final List<Map<String, dynamic>> perfilesSimples =
+        await _fetchSimpleMatches(uid);
+    if (!mounted) return;
+    setState(() {
+      profiles = perfilesSimples;
+    });
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        setState(() {
-          profiles = data.map((e) => Map<String, dynamic>.from(e)).toList();
-        });
-      } else {
-        throw Exception('Error en la respuesta de la IA');
-      }
-    } catch (e, s) {
-      debugPrint("❌ Error al obtener recomendaciones de IA: $e");
-      debugPrint("📛 Stacktrace: $s");
+  } catch (e) {
+    debugPrint("Error al cargar perfiles simples: $e");
+  } finally {
+    _isFetching = false;
+  }
+}
 
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content:
-              const Text('No se pudieron cargar los perfiles recomendados.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
+  Widget buildRoundIconButton({
+  required IconData icon,
+  required Color iconColor,
+  required Color backgroundColor,
+  Border? border,
+  required VoidCallback? onTap,
+  String? tooltip,
+  double customSize = 82, // valor por defecto
+}) {
+  return Tooltip(
+    message: tooltip ?? '',
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(100),
+      child: Container(
+        width: customSize,
+        height: customSize,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          shape: BoxShape.circle,
+          border: border,
         ),
-      );
+        child: Icon(icon, color: iconColor, size: 36),
+      ),
+    ),
+  );
+}
+
+  Future<List<String>> _obtenerUidsConectados(String uid) async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final data = snapshot.data();
+    return List<String>.from(data?['connections'] ?? []);
+  }
+
+  Future<void> _fetchIAProfiles() async {
+  if (_isFetching) return;
+  _isFetching = true;
+  _cancelarIA = false; // Reinicia la bandera al empezar
+
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
+    final connectedUids = await _obtenerUidsConectados(uid);
+
+    final apiUrl = 'https://recomendador-ia-g04z.onrender.com/recomendar';
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'uid': uid}),
+    );
+
+    if (_cancelarIA || !mounted) return; // Cancelación aquí
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('cached_profiles', jsonEncode(data));
+
+      if (data.isNotEmpty) {
+        if (_cancelarIA || !mounted) return; // Verifica otra vez
+        setState(() {
+          profiles = data
+              .map((e) => Map<String, dynamic>.from(e))
+              .where((e) => !connectedUids.contains(e['uid']))
+              .toList();
+        });
+
+        if (context.mounted && !_cancelarIA) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Perfiles recomendados actualizados por IA ✨"),
+              backgroundColor: Color(0xFFAB82FF),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    }
+  } catch (e) {
+    debugPrint("Error al cargar perfiles IA: $e");
+  } finally {
+    _isFetching = false;
+  }
+}
+
+
+// Nuevo método: coincidencias simples previas
+  Future<List<Map<String, dynamic>>> _fetchSimpleMatches(String uid) async {
+    try {
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final data = doc.data();
+      if (data == null) return [];
+
+      final connectedUids = await _obtenerUidsConectados(uid);
+      final userUniversity = data['university'];
+      final userStudies = data['studies'];
+      final userActivities =
+          List<String>.from(data['favorite_activities'] ?? []);
+
+      final query = FirebaseFirestore.instance.collection('users');
+      final snapshot = await query.get();
+      final results = <Map<String, dynamic>>[];
+
+      for (var doc in snapshot.docs) {
+  if (doc.id == uid || connectedUids.contains(doc.id)) continue;
+
+  final d = doc.data();
+  int coincidencias = 0;
+  if (d['university'] == userUniversity) coincidencias++;
+  if (d['studies'] == userStudies) coincidencias++;
+  coincidencias += List<String>.from(d['favorite_activities'] ?? [])
+      .where((actividad) => userActivities.contains(actividad))
+      .length;
+
+  if (coincidencias > 0) {
+    results.add({
+      'uid': doc.id,
+      'name': d['name'] ?? 'Sin nombre',
+      'university': d['university'],
+      'studies': d['studies'],
+      'ubicacion': d['ubicacion'],
+      'picture': d['picture'],
+      'born_date': d['born_date'],
+      'academic_interests': d['academic_interests'],
+      'favorite_activities': d['favorite_activities'],
+      'similarity': 0.0,
+      'puntuacion': coincidencias, // añadimos puntuación
+    });
+  }
+}
+
+// 🔽 Ordenar antes de devolver
+results.sort((a, b) => (b['puntuacion'] as int).compareTo(a['puntuacion'] as int));
+return results;
+
+    } catch (e) {
+      debugPrint("Error en coincidencias simples: $e");
+      return [];
     }
   }
 
   void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
     switch (index) {
       case 0:
         context.goNamed('HomePage');
@@ -428,11 +607,20 @@ class _HomePageWidgetState extends State<HomePageWidget>
         context.goNamed('CommunitiesPage');
         break;
       case 3:
+      context.goNamed(
+        'MarketplacePage',
+        extra: {
+          'profileImageUrl': picture.isNotEmpty
+              ? picture
+              : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+        },
+      );
+      break;  
+      case 4:
         context.goNamed('ProfilePage');
         break;
     }
   }
-
   void _goToPreviousProfile() {
     if (_currentPage > 0) {
       _pageController.animateToPage(
@@ -512,30 +700,83 @@ class _HomePageWidgetState extends State<HomePageWidget>
     }
   }
 
+  // ... (todo el código anterior sin cambios)
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        toolbarHeight: 50,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        elevation: 0,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.network(
+              'https://tindermonlau.blob.core.windows.net/imagenes/logo_swipe.png',
+              height: 150,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Container(
+                width: 150,
+                height: 150,
+                color: Colors.grey,
+                child: const Center(child: Text('Logo unavailable')),
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.lightbulb,
+                color: _modoIA ? Colors.amber.shade800 : Colors.red.shade900,
+              ),
+              tooltip: _modoIA ? 'Modo IA activado' : 'Modo coincidencias rápidas',
+              onPressed: () async {
+  final prefs = await SharedPreferences.getInstance();
+  final nuevoModo = !_modoIA;
+
+  setState(() {
+    _modoIA = nuevoModo;
+    _cancelarIA = !nuevoModo; // Si se desactiva IA, cancelamos su carga
+    profiles = [];
+  });
+
+  prefs.setBool('modoIA', nuevoModo);
+
+  if (nuevoModo) {
+    _fetchIAProfiles(); // solo si no fue cancelado
+  } else {
+    _fetchProfiles(); // vuelve a cargar simple
+  }
+},
+
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         bottom: false,
         child: Stack(
           children: [
             profiles.isEmpty
                 ? const Center(child: CircularProgressIndicator())
-                : PageView.builder(
-                    controller: _pageController,
-                    itemCount: profiles.length,
-                    onPageChanged: (index) => setState(() {
-                      _currentPage = index;
-                    }),
-                    itemBuilder: (context, index) {
-                      return Transform(
-                        transform: Matrix4.identity()
-                          ..rotateZ((_swipeOffset - index) * 0.05),
-                        alignment: Alignment.center,
-                        child: _buildProfileCard(profiles[index]),
-                      );
-                    },
+                : RefreshIndicator(
+                    onRefresh: _fetchProfiles,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: profiles.length,
+                      onPageChanged: (index) => setState(() {
+                        _currentPage = index;
+                      }),
+                      itemBuilder: (context, index) {
+                        return Transform(
+                          transform: Matrix4.identity()
+                            ..rotateZ((_swipeOffset - index) * 0.05),
+                          alignment: Alignment.center,
+                          child: _buildProfileCard(profiles[index]),
+                        );
+                      },
+                    ),
                   ),
             Positioned(
               bottom: 20,
@@ -543,89 +784,58 @@ class _HomePageWidgetState extends State<HomePageWidget>
               right: 0,
               child: _buildBottomControls(),
             ),
-            Positioned(
-              top: -55,
-              left: 10,
-              child: Image.network(
-                'https://tindermonlau.blob.core.windows.net/imagenes/logo_swipe.png',
-                width: 150,
-                height: 150,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: 150,
-                  height: 150,
-                  color: Colors.grey,
-                  child: const Center(child: Text('Logo unavailable')),
-                ),
-              ),
-            ),
           ],
         ),
       ),
       bottomNavigationBar: CustomNavBar(
-  currentIndex: _selectedIndex,
-  onTap: _onNavItemTapped,
-  profileImageUrl: picture.isNotEmpty
-      ? picture
-      : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
-),
-
+        currentIndex: _selectedIndex,
+        onTap: _onNavItemTapped,
+        profileImageUrl: picture.isNotEmpty
+            ? picture
+            : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+      ),
     );
   }
 
   Widget _buildBottomControls() {
-    final iconColor = Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black;
+    if (profiles.isEmpty) return const SizedBox.shrink();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 30, color: iconColor),
-          onPressed: (profiles.isEmpty || _currentPage == 0)
-              ? null
-              : _goToPreviousProfile,
-        ),
-        const SizedBox(width: 30),
-        ElevatedButton.icon(
-          icon: Icon(
-            profiles.isNotEmpty &&
-                    (profiles[_currentPage]['isConnected'] ?? false)
-                ? Icons.check_circle
-                : Icons.person_add_alt,
-            color: Colors.white,
+    final isConnected = profiles[_currentPage]['isConnected'] ?? false;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: AnimatedScale(
+          scale: _model.matchScale,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutBack,
+          child: buildRoundIconButton(
+            icon: Icons.school,
+            iconColor: Colors.green[800]!,
+            backgroundColor: Colors.green.withOpacity(0.2),
+            tooltip: 'Conectar',
+            customSize: 82,
+            onTap: (profiles[_currentPage]['isConnected'] ?? false)
+                ? null
+                : () async {
+                    setState(() => _model.matchScale = 1.4);
+                    _connect();
+                    await Future.delayed(const Duration(milliseconds: 300));
+                    if (mounted) {
+                      setState(() => _model.matchScale = 1.0);
+                    }
+                  },
           ),
-          label: Text(
-            profiles.isNotEmpty &&
-                    (profiles[_currentPage]['isConnected'] ?? false)
-                ? "Conectado"
-                : "Conectar",
-            style: const TextStyle(color: Colors.white),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: profiles.isNotEmpty &&
-                    (profiles[_currentPage]['isConnected'] ?? false)
-                ? Colors.green
-                : Colors.blueAccent,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          ),
-          onPressed: profiles.isEmpty ||
-                  (profiles[_currentPage]['isConnected'] ?? false)
-              ? null
-              : _connect,
         ),
-        const SizedBox(width: 30),
-        IconButton(
-          icon: Icon(Icons.arrow_forward_ios, size: 30, color: iconColor),
-          onPressed: (profiles.isEmpty || _currentPage >= profiles.length - 1)
-              ? null
-              : _goToNextProfile,
-        ),
-      ],
+      ),
     );
   }
+
+// ... (resto del código permanece igual)
+
+
+
 
   Widget _buildProfileCard(Map<String, dynamic> profile) {
     String defaultImageUrl =
@@ -652,13 +862,6 @@ class _HomePageWidgetState extends State<HomePageWidget>
     double similarity = (profile['similarity'] ?? 0.0) as double;
     int porcentaje = (similarity * 100).round();
 
-    final textColor = Theme.of(context).brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black;
-    final subTextColor = Theme.of(context).brightness == Brightness.dark
-        ? Colors.white70
-        : Colors.black54;
-
     return GestureDetector(
       onTap: () {
         showDialog(
@@ -675,100 +878,93 @@ class _HomePageWidgetState extends State<HomePageWidget>
           ),
         );
       },
-      child: Stack(
-        children: [
-          Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.73,
                 child: Image.network(
                   imageUrl,
-                  width: 400,
-                  height: 400,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Image.network(
                     defaultImageUrl,
-                    width: 400,
-                    height: 400,
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 100,
-            left: 20,
-            right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${profile['name'] ?? 'Desconocido'}, $edad',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
+              Positioned(
+                bottom: 20,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${profile['name'] ?? 'Desconocido'}, $edad',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.school, color: Colors.white70, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            profile['studies'] ?? 'Estudios no especificados',
+                            style: const TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, color: Colors.white70, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            profile['ubicacion'] ?? 'Ubicación no disponible',
+                            style: const TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.apartment, color: Colors.white70, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            profile['university'] ?? 'Universidad desconocida',
+                            style: const TextStyle(color: Colors.white70, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  'Afinidad: $porcentaje%',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                LinearProgressIndicator(
-                  value: similarity.clamp(0.0, 1.0),
-                  minHeight: 6,
-                  backgroundColor: Colors.grey[300],
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(Color(0xFFAB82FF)),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Icon(Icons.alternate_email, color: subTextColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      profile['university'] ?? 'Desconocido',
-                      style: TextStyle(color: subTextColor, fontSize: 14),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.location_on, color: subTextColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      profile['ubicacion'] ?? 'Ubicación desconocida',
-                      style: TextStyle(color: subTextColor, fontSize: 14),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.school, color: subTextColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      profile['studies'] ?? 'Desconocido',
-                      style: TextStyle(color: subTextColor, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
+
 }
