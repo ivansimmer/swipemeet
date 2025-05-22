@@ -50,7 +50,7 @@ class _StartPageWidgetState extends State<StartPageWidget> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFAB82FF), Color(0xFFFF42B3)],
+                  colors: [Color.fromARGB(255, 180, 144, 252), Color.fromARGB(255, 148, 97, 252)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -61,13 +61,13 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                   Align(
                     alignment: AlignmentDirectional(0, 0),
                     child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 200, 0, 0),
-                        child: Image.asset('assets/logo.png')),
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 120, 0, 0),
+                        child: Image.asset('assets/icon-app.png', width: 200,)),
                   ),
                   Align(
                     alignment: AlignmentDirectional(0, 0),
                     child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(50, 50, 50, 0),
+                      padding: EdgeInsetsDirectional.fromSTEB(50, 20, 50, 0),
                       child: Text(
                         'Clicando Crear Cuenta o Iniciar Sesion aceptas nuestras condiciones. Comprueba como procesamos tu informacion en nuestra Politica de Privacidad.',
                         textAlign: TextAlign.start,
@@ -91,7 +91,7 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                         },
                         child: Text(
                           'CREAR CUENTA',
-                          style: FlutterFlowTheme.buttonText,
+                          style: TextStyle(fontFamily: "Lato", fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFAB82FF), // button color
@@ -118,7 +118,7 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                         },
                         child: Text(
                           'INICIAR SESION',
-                          style: FlutterFlowTheme.buttonText,
+                          style: TextStyle(fontFamily: "Lato", fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFAB82FF), // button color

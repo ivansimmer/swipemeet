@@ -6,8 +6,11 @@ import 'package:provider/provider.dart';
 import 'package:swipemeet/auth/firebase_auth/auth_check.dart';
 import 'package:swipemeet/flutter_flow/flutter_flow_theme_provider.dart';
 import 'package:swipemeet/flutter_flow/tracking_wrapper.dart';
+import 'package:swipemeet/pages/communities_page_model.dart';
+import 'package:swipemeet/pages/community_chat_page.dart';
+import 'package:swipemeet/pages/discover_communities.dart';
 import 'package:swipemeet/pages/edit_page.dart';
-import 'package:swipemeet/pages/interests_page.dart';
+import 'package:swipemeet/pages/marketplace_page.dart';
 import 'pages/start_page.dart';
 import 'pages/sign_in_page.dart';
 import 'pages/log_in_page.dart';
@@ -18,109 +21,9 @@ import 'pages/home_page.dart';
 import 'pages/chat_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/pass_page.dart';
+import 'pages/communities_page.dart';
 
 final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            title: 'SwipeMeet',
-            routerConfig: _router,
-            theme: ThemeData(
-              brightness: Brightness.light,
-              textTheme: const TextTheme(
-                displayLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                displayMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                displaySmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                headlineLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                headlineMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                headlineSmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                titleLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                titleMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                titleSmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                bodyLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                bodyMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                bodySmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                labelLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                labelMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                labelSmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-              ),
-            ),
-            darkTheme: ThemeData.dark().copyWith(
-              textTheme: const TextTheme(
-                displayLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                displayMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                displaySmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                headlineLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                headlineMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                headlineSmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                titleLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                titleMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                titleSmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                bodyLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                bodyMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                bodySmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                labelLarge: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                labelMedium: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-                labelSmall: TextStyle(
-                    fontFamily: 'Georgia', fontStyle: FontStyle.italic),
-              ),
-            ),
-            themeMode: ThemeMode.system,
-          );
-        },
-      ),
-    );
-  }
-}
-
-void logScreenView(String screenName) {
-  FirebaseAnalytics.instance.logScreenView(screenName: screenName);
-  debugPrint("Registrando pantalla: $screenName");
-}
 
 final GoRouter _router = GoRouter(
   initialLocation: '/',
@@ -171,7 +74,8 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => ScreenTrackingWrapper(
         screenName: 'CompletingProfile2Page',
         child: CompletingProfile2Widget(
-            name: state.pathParameters['name'] ?? 'Unknown'),
+          name: state.pathParameters['name'] ?? 'Unknown',
+        ),
       ),
     ),
     GoRoute(
@@ -234,14 +138,6 @@ final GoRouter _router = GoRouter(
       ),
     ),
     GoRoute(
-      path: '/interestsPage',
-      name: 'InterestsPage',
-      builder: (context, state) => const ScreenTrackingWrapper(
-        screenName: 'InterestsPage',
-        child: InterestsPageWidget(),
-      ),
-    ),
-    GoRoute(
       path: '/editPage',
       name: 'EditPage',
       builder: (context, state) => const ScreenTrackingWrapper(
@@ -249,5 +145,110 @@ final GoRouter _router = GoRouter(
         child: EditWidget(),
       ),
     ),
+    GoRoute(
+      name: 'CommunitiesPage',
+      path: '/communitiesPage',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: CommunitiesPageWidget(
+          screenName: 'CommunitiesPage',
+          child: CommunitiesWidget(),
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            child,
+      ),
+    ),
+    GoRoute(
+      path: '/discover_communities',
+      name: 'DiscoverCommunities',
+      builder: (context, state) => const ScreenTrackingWrapper(
+        screenName: 'DiscoverCommunities',
+        child: DiscoverCommunitiesWidget(),
+      ),
+    ),
+    GoRoute(
+      path: '/community_chat/:id',
+      name: 'CommunityChat',
+      builder: (context, state) {
+        final communityId = state.pathParameters['id']!;
+        final extra = state.extra as Map<String, dynamic>?;
+        final communityName = extra?['name'] ?? 'Comunidad';
+
+        return CommunityChatPage(
+          communityId: communityId,
+          communityName: communityName,
+        );
+      },
+    ),
+    GoRoute(
+  path: '/marketplacePage',
+  name: 'MarketplacePage',
+  pageBuilder: (context, state) {
+    final extra = state.extra as Map<String, dynamic>? ?? {};
+    final profileImageUrl = extra['profileImageUrl'] ??
+        'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
+
+    return CustomTransitionPage(
+      key: state.pageKey,
+      child: MarketplacePage(profileImageUrl: profileImageUrl),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+    );
+  },
+),
+GoRoute(
+  name: 'AddProductPage',
+  path: '/addProductPage',
+  builder: (context, state) => const AddProductPage(),
+),
+
+
+    
   ],
 );
+
+void logScreenView(String screenName) {
+  FirebaseAnalytics.instance.logScreenView(screenName: screenName);
+  debugPrint("Registrando pantalla: $screenName");
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'SwipeMeet',
+            routerConfig: _router,
+            theme: ThemeData(
+              brightness: Brightness.light,
+              textTheme: ThemeData.light().textTheme.apply(
+                    fontFamily: 'Georgia',
+                    bodyColor: Colors.black,
+                    displayColor: Colors.black,
+                  ),
+            ),
+            darkTheme: ThemeData.dark().copyWith(
+              textTheme: ThemeData.dark().textTheme.apply(
+                    fontFamily: 'Georgia',
+                    bodyColor: Colors.white,
+                    displayColor: Colors.white,
+                  ),
+            ),
+            themeMode: ThemeMode.system,
+          );
+        },
+      ),
+    );
+  }
+}

@@ -43,9 +43,7 @@ class _PassWidgetState extends State<PassWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: FlutterFlowTheme.primaryBackground,
       appBar: AppBar(
-        backgroundColor: FlutterFlowTheme.primaryBackground,
         automaticallyImplyLeading: false,
         leading: Container(
           width: 60,
@@ -83,20 +81,18 @@ class _PassWidgetState extends State<PassWidget> {
             children: [
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(32, 0, 0, 0),
-                child: Text(
-                  'Olvidé mi contraseña',
-                  style: FlutterFlowTheme.tituloPages
-                ),
+                child: Text('Olvidé mi contraseña',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               ),
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(32, 20, 32, 10),
                 child: Text(
-                  'Te enviaremos un correo con un link con el que podras restablecer tu contraseña. Por favor, introduce el correo asociado con tu cuenta.',
-                  style: FlutterFlowTheme.labelMedium.copyWith(
-                    fontFamily: 'Inter',
-                    letterSpacing: 0.0,
-                  ),
-                ),
+                    'Te enviaremos un correo con un link con el que podras restablecer tu contraseña. Por favor, introduce el correo asociado con tu cuenta.',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      letterSpacing: 0.0,
+                    )),
               ),
               Padding(
                 padding: EdgeInsetsDirectional.fromSTEB(32, 12, 32, 0),
@@ -113,7 +109,7 @@ class _PassWidgetState extends State<PassWidget> {
                       hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: FlutterFlowTheme.alternate,
+                          color: Colors.grey,
                           width: 2,
                         ),
                         borderRadius: BorderRadius.circular(12),
@@ -166,12 +162,14 @@ class _PassWidgetState extends State<PassWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(0, 24, 0, 0),
                   child: FlutterFlowButton(
                     onPressed: () async {
-                      if (_model.emailAddressTextController?.text.isEmpty ?? true) {
+                      if (_model.emailAddressTextController?.text.isEmpty ??
+                          true) {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
                             title: Text('Error'),
-                            content: Text('El correo es necesario introducirlo.'),
+                            content:
+                                Text('El correo es necesario introducirlo.'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
@@ -188,12 +186,15 @@ class _PassWidgetState extends State<PassWidget> {
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Link para restablecer la contraseña enviado!'),
+                            content: Text(
+                                'Link para restablecer la contraseña enviado!'),
                           ),
                         );
                         // Mostrar un AlertDialog o SnackBar, luego redirigir a la página de inicio de sesión.
-                        await Future.delayed(Duration(seconds: 2));  // Esperar 2 segundos
-                        context.goNamed('LogInPage');  // Redirigir a la página de login
+                        await Future.delayed(
+                            Duration(seconds: 2)); // Esperar 2 segundos
+                        context.goNamed(
+                            'LogInPage'); // Redirigir a la página de login
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

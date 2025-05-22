@@ -123,7 +123,7 @@ class ProfileDetailPageWidget extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: SizedBox(
-                      width: 150,
+                      width: 140,
                       height: 150,
                       child: picture.isNotEmpty
                           ? Image.network(picture, fit: BoxFit.cover)
@@ -132,34 +132,80 @@ class ProfileDetailPageWidget extends StatelessWidget {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(name,
-                            style: const TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.bold)),
-                        if (age.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(age,
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                        ],
-                        if (university.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(university,
-                              style: const TextStyle(fontSize: 16)),
-                        ],
-                        if (studies.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(studies, style: const TextStyle(fontSize: 16)),
-                        ],
-                        if (location.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(location, style: const TextStyle(fontSize: 16)),
-                        ],
-                      ],
-                    ),
-                  ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(name,
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 6,),
+                                Row(children: [
+                                  Text(
+                                    "Edad: ", 
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                      shadows: isDarkMode
+                                          ? const [
+                                              Shadow(
+                                                color: Colors.black26,
+                                                offset: Offset(1, 1),
+                                                blurRadius: 2,
+                                              ),
+                                            ]
+                                          : null
+                                      )
+                                  ),
+                                  if (age.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    age,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.normal,
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                      shadows: isDarkMode
+                                          ? const [
+                                              Shadow(
+                                                color: Colors.black26,
+                                                offset: Offset(1, 1),
+                                                blurRadius: 2,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                  ),
+                                ],
+                                ],
+                                ),
+                                
+                                if (university.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(university,
+                                      maxLines: 1,
+                                      style: const TextStyle(fontSize: 16, overflow: TextOverflow.ellipsis)),
+                                ],
+                                if (studies.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(studies,
+                                      maxLines: 1,
+                                      style: const TextStyle(fontSize: 16, overflow: TextOverflow.ellipsis)),
+                                ],
+                                if (location.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(location,
+                                      maxLines: 1,
+                                      style: const TextStyle(fontSize: 16, overflow: TextOverflow.ellipsis)),
+                                ],
+                              ],
+                            ),
+                          ),
                 ],
               ),
 

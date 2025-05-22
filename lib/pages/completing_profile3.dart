@@ -44,7 +44,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
         FlutterFlowModel.createModel(context, () => CompletingProfile3Model());
 
     // Inicializa los valores predeterminados para los dropdowns
-    _model.dropDownValue1 = 'Monlau Centre d\'Estudis'; // Valor predeterminado
+    _model.dropDownValue1 = 'Monlau'; // Valor predeterminado
     _model.dropDownValue2 = 'Ciencias'; // Valor predeterminado
   }
 
@@ -66,7 +66,6 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Column(
@@ -81,7 +80,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 animation: true,
                 animateFromLastPercent: true,
                 progressColor: const Color(0xFFAB82FF),
-                backgroundColor: FlutterFlowTheme.alternate,
+                backgroundColor: Colors.grey,
                 center: Text(
                   '\n',
                   style: FlutterFlowTheme.headlineSmall.copyWith(
@@ -98,12 +97,10 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                   child: Text(
                     // Texto subtitulo
                     'Tu perfil de estudiante:',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
+                    style: TextStyle(fontFamily: 'Inter',
                       fontSize: 30,
                       letterSpacing: 0.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                      fontWeight: FontWeight.bold,)
                   ),
                 ),
               ),
@@ -114,10 +111,8 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                   child: Text(
                     // Texto escuela
                     '¿Donde estudias?',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      letterSpacing: 0.0,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter',
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),
@@ -125,7 +120,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                 child: FlutterFlowDropDown(
                   // Dropdown escuelas
-                  items: const ['Monlau Centre d\'Estudis', 'UPC', 'UB', 'UPF', 'UAB', 'ESADE', 'LA SALLE'],
+                  items: const ['Monlau', 'UPC', 'UB', 'UPF', 'UAB', 'ESADE', 'LA SALLE'],
                   selectedItem: _model.dropDownValue1,
                   onChanged: (val) =>
                       setState(() => _model.dropDownValue1 = val),
@@ -162,10 +157,8 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                   child: Text(
                     // Texto estudios
                     '¿En que area de estudios te encuentras?',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      letterSpacing: 0.0,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter',
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),
@@ -232,7 +225,17 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                         intereses: [],
                         connections: [],
                         pictureUrl:
-                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png', // Imagen fija por ahora
+                            'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png', 
+                        // Datos vacios para que no de error posteriormente
+                        academic_interests: [], 
+                        favorite_activities: [], 
+                        description: '', 
+                        favorite_song: '', 
+                        favorite_song_image: '', 
+                        photo1: '', 
+                        photo2: '', 
+                        photo3: '', 
+                        photo4: '',
                       );
 
                       // Guardar el perfil del usuario en Firestore bajo una coleccion users

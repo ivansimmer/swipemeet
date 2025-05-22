@@ -18,7 +18,6 @@ class FlutterFlowIconButton extends StatelessWidget {
       icon: Icon(icon),
       onPressed: onPressed,
       iconSize: 30.0,
-      color: Colors.black,
     );
   }
 }

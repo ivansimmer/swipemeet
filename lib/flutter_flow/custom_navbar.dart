@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
+  final String profileImageUrl;
 
   const CustomNavBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
+    required this.profileImageUrl,
   }) : super(key: key);
 
   @override
@@ -19,18 +21,23 @@ class CustomNavBar extends StatelessWidget {
         await Future.delayed(const Duration(milliseconds: 300));
         onTap(index);
       },
-      items: const [
-        Icon(Icons.home, size: 30),
-        Icon(Icons.chat, size: 30),
-        Icon(Icons.person, size: 30),
+      items: [
+        const Icon(Icons.home, size: 30),
+        const Icon(Icons.chat, size: 30),
+        const Icon(Icons.groups, size: 30),
+        const Icon(Icons.shopping_bag, size: 30),
+        CircleAvatar(
+          radius: 16,
+          backgroundImage: NetworkImage(profileImageUrl),
+          backgroundColor: Colors.transparent,
+        ),
       ],
-      height: 60.0, // Puedes modificar la altura de la barra
-      color: const Color(0xFFAB82FF), // Cambia el color de la barra
-      buttonBackgroundColor: const Color(0xFFAB82FF), // Color del botón
+      height: 60.0,
+      color: const Color(0xFFAB82FF),
+      buttonBackgroundColor: const Color(0xFFAB82FF),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      animationCurve: Curves.easeInOut, // Animación de transición
-      animationDuration:
-          const Duration(milliseconds: 300), // Duración de la animación
+      animationCurve: Curves.easeInOut,
+      animationDuration: const Duration(milliseconds: 300),
     );
   }
 }

@@ -34,6 +34,8 @@ class _EditWidgetState extends State<EditWidget> {
 
   List<String> _academicInterests = [];
   final List<String> _selectedActivities = [];
+  String? selectedEscuelaOriginal;
+  String? selectedEstudioOriginal;
 
   DateTime? _birthDate;
 
@@ -136,6 +138,8 @@ class _EditWidgetState extends State<EditWidget> {
           } else {
             selectedEstudio = null;
           }
+          selectedEscuelaOriginal = selectedEscuela;
+          selectedEstudioOriginal = selectedEstudio;
 
           final rawInterests = doc['academic_interests'];
           if (rawInterests is String) {
@@ -209,6 +213,95 @@ class _EditWidgetState extends State<EditWidget> {
         'favorite_song_image': _favoriteSong_Image,
       }, SetOptions(merge: true));
     }
+  }
+
+  Future<void> gestionarCambioDeComunidades({
+    required String? anteriorEscuela,
+    required String? anteriorEstudio,
+    required String nuevaEscuela,
+    required String nuevoEstudio,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    bool haCambiadoEscuela = anteriorEscuela != nuevaEscuela;
+    bool haCambiadoEstudio = anteriorEstudio != nuevoEstudio;
+
+    if (!haCambiadoEscuela && !haCambiadoEstudio) {
+      // No hay cambios, solo asegúrate de que esté añadido
+      await asignarUsuarioAComunidades();
+      return;
+    }
+
+    // Preparar mensaje
+    String mensaje = '¿Te gustaría eliminar las comunidades anteriores de:';
+    if (haCambiadoEscuela && anteriorEscuela != null) {
+      mensaje += '\n- Escuela: $anteriorEscuela';
+    }
+    if (haCambiadoEstudio && anteriorEstudio != null) {
+      mensaje += '\n- Estudios: $anteriorEstudio';
+    }
+    mensaje += '\ny unirte a las nuevas comunidades?';
+
+    bool confirmar = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Cambiar comunidades'),
+            content: Text(mensaje),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Sí, actualizar'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    final batch = FirebaseFirestore.instance.batch();
+
+    // Eliminar si acepta
+    if (confirmar) {
+      final comunidades =
+          await FirebaseFirestore.instance.collection('communities').get();
+      for (var comunidad in comunidades.docs) {
+        final data = comunidad.data();
+        final tipo = data['type'] ?? '';
+        final comunidadId = comunidad.id;
+
+        if ((tipo == 'escuela' && comunidadId == anteriorEscuela) ||
+            (tipo == 'estudios' && comunidadId == anteriorEstudio)) {
+          batch.update(comunidad.reference, {
+            'users': FieldValue.arrayRemove([user.uid]),
+          });
+        }
+      }
+    }
+
+    // Añadir a nuevas comunidades
+    if (nuevaEscuela.isNotEmpty) {
+      final ref = FirebaseFirestore.instance
+          .collection('communities')
+          .doc(nuevaEscuela);
+      batch.update(ref, {
+        'users': FieldValue.arrayUnion([user.uid]),
+      });
+    }
+
+    if (nuevoEstudio.isNotEmpty) {
+      final ref = FirebaseFirestore.instance
+          .collection('communities')
+          .doc(nuevoEstudio);
+      batch.update(ref, {
+        'users': FieldValue.arrayUnion([user.uid]),
+      });
+    }
+
+    await batch.commit();
   }
 
   Future<void> _pickAndUploadPhoto(int index) async {
@@ -734,6 +827,13 @@ class _EditWidgetState extends State<EditWidget> {
                         }
 
                         await _updateUserData();
+                        await gestionarCambioDeComunidades(
+                          anteriorEscuela: selectedEscuelaOriginal,
+                          anteriorEstudio: selectedEstudioOriginal,
+                          nuevaEscuela: selectedEscuela ?? '',
+                          nuevoEstudio: selectedEstudio ?? '',
+                        ); // 👈 asigna al usuario sus comunidades si cambia estudios o escuela
+
                         if (!mounted) return;
                         context.goNamed('ProfilePage');
                       },
@@ -840,4 +940,43 @@ class _ImageCropOverlayState extends State<ImageCropOverlay> {
       ),
     );
   }
+}
+
+Future<void> asignarUsuarioAComunidades() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final doc =
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+  if (!doc.exists) return;
+
+  final userData = doc.data()!;
+  final escuela = userData['university'] ?? '';
+  final estudio = userData['studies'] ?? '';
+
+  final batch = FirebaseFirestore.instance.batch();
+
+  Future<void> agregarASala(String comunidadId) async {
+    final ref =
+        FirebaseFirestore.instance.collection('communities').doc(comunidadId);
+    final snap = await ref.get();
+    if (snap.exists) {
+      final users = List<String>.from(snap.data()?['users'] ?? []);
+      if (!users.contains(user.uid)) {
+        batch.update(ref, {
+          'users': FieldValue.arrayUnion([user.uid]),
+        });
+      }
+    }
+  }
+
+  if (escuela.isNotEmpty) {
+    await agregarASala(escuela);
+  }
+
+  if (estudio.isNotEmpty) {
+    await agregarASala(estudio);
+  }
+
+  await batch.commit();
 }

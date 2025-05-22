@@ -70,7 +70,6 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Column(
@@ -85,7 +84,7 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                 animation: true,
                 animateFromLastPercent: true,
                 progressColor: Color(0xFFAB82FF),
-                backgroundColor: FlutterFlowTheme.alternate,
+                backgroundColor: Colors.grey,
                 center: Text(
                   '\n',
                   style: FlutterFlowTheme.headlineSmall.copyWith(
@@ -103,12 +102,10 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                   padding: EdgeInsetsDirectional.fromSTEB(50, 50, 0, 0),
                   child: Text(
                     'Tu nombre es:',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
+                    style: TextStyle(fontFamily: 'Inter',
                       fontSize: 32,
                       letterSpacing: 0.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                      fontWeight: FontWeight.bold,)
                   ),
                 ),
               ),
@@ -144,7 +141,6 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
-                            color: Colors.black,
                             width: 1,
                           ),
                           borderRadius: BorderRadius.circular(14),
@@ -201,11 +197,9 @@ class _CompletingProfile1WidgetState extends State<CompletingProfile1Widget> {
                   padding: EdgeInsetsDirectional.fromSTEB(50, 10, 50, 0),
                   child: Text(
                     'Así es como aparecerás en Swipemeet, y no podrás cambiarlo más tarde',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
+                    style: TextStyle(fontFamily: 'Inter',
                       fontSize: 12,
-                      letterSpacing: 0.0,
-                    ),
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),

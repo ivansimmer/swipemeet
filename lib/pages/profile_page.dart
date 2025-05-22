@@ -32,7 +32,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
       description = "";
   List<String> interests = [], activities = [];
   bool isLoading = true;
-  int _selectedIndex = 2;
+  int _selectedIndex = 4;
   String favoriteSong = '';
   bool _isPressed = false;
   String favoriteSongImage = '';
@@ -156,6 +156,19 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
         context.goNamed('ChatPage');
         break;
       case 2:
+        context.goNamed('CommunitiesPage');
+        break;
+      case 3:
+      context.goNamed(
+        'MarketplacePage',
+        extra: {
+          'profileImageUrl': picture.isNotEmpty
+              ? picture
+              : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+        },
+      );
+      break;  
+      case 4:
         context.goNamed('ProfilePage');
         break;
     }
@@ -542,9 +555,13 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
               ),
             ),
       bottomNavigationBar: CustomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavItemTapped,
-      ),
+  currentIndex: _selectedIndex,
+  onTap: _onNavItemTapped,
+  profileImageUrl: picture.isNotEmpty
+      ? picture
+      : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+),
+
     );
   }
 

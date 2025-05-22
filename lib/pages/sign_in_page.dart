@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:swipemeet/flutter_flow/flutter_flow_icon_button.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
-import 'package:swipemeet/pages/sing_in_page_model.dart';
+import 'package:swipemeet/pages/sign_in_page_model.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -58,7 +58,6 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Column(
@@ -88,10 +87,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
                   child: Text(
                     'Introduce tu correo:',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      letterSpacing: 0.0,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter',
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),
@@ -170,10 +167,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
                     'Introduce tu contraseña:',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      letterSpacing: 0.0,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter',
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),
@@ -260,10 +255,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
                     'Confirma tu contraseña:',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      letterSpacing: 0.0,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter',
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),

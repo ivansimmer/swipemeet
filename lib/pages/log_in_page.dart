@@ -7,7 +7,6 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 
 class LogInPageWidget extends StatefulWidget {
-
   const LogInPageWidget({super.key});
 
   static String routeName = 'LogInPage';
@@ -60,7 +59,6 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Column(
@@ -92,7 +90,7 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
                     'Introduce tu correo:',
-                    style: FlutterFlowTheme.labelMedium,
+                    style: TextStyle(fontSize: 14),
                   ),
                 ),
               ),
@@ -110,7 +108,6 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                         hintText: 'emailejemplo@gmail.com',
                         hintStyle: FlutterFlowTheme.introHints,
                         filled: true,
-                        fillColor: FlutterFlowTheme.secondaryBackground,
                         suffixIcon: InkWell(
                           onTap: () {},
                           child: Icon(Icons.email),
@@ -127,7 +124,7 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
                     'Introduce tu contraseña:',
-                    style: FlutterFlowTheme.labelMedium,
+                    style: TextStyle(fontSize: 14),
                   ),
                 ),
               ),
@@ -144,7 +141,6 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                       hintText: 'contraseña',
                       filled: true,
                       hintStyle: FlutterFlowTheme.introHints,
-                      fillColor: FlutterFlowTheme.secondaryBackground,
                       suffixIcon: InkWell(
                         onTap: () {
                           setState(() {
@@ -222,7 +218,7 @@ class _LogInPageWidgetState extends State<LogInPageWidget> {
                 padding: EdgeInsetsDirectional.fromSTEB(50, 70, 50, 0),
                 child: Text(
                   'Clicando el siguiente boton seras redirigido a la pagina inicial de Swipemeet.',
-                  style: FlutterFlowTheme.labelMedium.copyWith(fontSize: 12),
+                  style: TextStyle(fontSize: 12),
                 ),
               ),
               Padding(

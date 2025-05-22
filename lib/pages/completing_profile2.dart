@@ -27,7 +27,7 @@ class CompletingProfile2Widget extends StatefulWidget {
 
 class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
   late CompletingProfile2Model _model;
-  String _borndate = "";  // Variable para la fecha de nacimiento
+  String _borndate = ""; // Variable para la fecha de nacimiento
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -47,9 +47,8 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
   }
 
   bool isValidDateFormat(String input) {
-    final RegExp dateRegExp = RegExp(
-      r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$'
-    );
+    final RegExp dateRegExp =
+        RegExp(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$');
 
     if (!dateRegExp.hasMatch(input)) return false;
 
@@ -96,20 +95,21 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
           top: true,
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              LinearPercentIndicator( // Barra de progreso header
+              LinearPercentIndicator(
+                // Barra de progreso header
                 percent: 0.5,
-                width: MediaQuery.of(context).size.width * 1, // width of the button
+                width: MediaQuery.of(context).size.width *
+                    1, // width of the button
                 lineHeight: 12,
                 animation: true,
                 animateFromLastPercent: true,
                 progressColor: Color(0xFFAB82FF),
-                backgroundColor: FlutterFlowTheme.alternate,
+                backgroundColor: Colors.grey,
                 center: Text(
                   '\n',
                   style: FlutterFlowTheme.headlineSmall.copyWith(
@@ -127,12 +127,10 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
                     'Tu fecha de nacimiento es:',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
+                    style: TextStyle(fontFamily: 'Inter',
                       fontSize: 30,
                       letterSpacing: 0.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                      fontWeight: FontWeight.bold,)
                   ),
                 ),
               ),
@@ -143,23 +141,36 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 40, 0, 0),
                   child: Container(
-                    width: MediaQuery.of(context).size.width * 0.7, // width of the button
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // width of the button
                     child: TextFormField(
                       controller: _model.textController,
                       focusNode: _model.textFieldFocusNode,
-                      onChanged: (valueDate) {
-                        setState(() {
-                          _borndate = valueDate; // Guardamos el valor ingresado
-                        });
+                      readOnly: true,
+                      onTap: () async {
+                        FocusScope.of(context)
+                            .unfocus(); // Cierra el teclado si estaba abierto
+
+                        final DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate:
+                              DateTime.now().subtract(Duration(days: 365 * 18)),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                          locale: const Locale("es", ""), // Español
+                        );
+
+                        if (pickedDate != null) {
+                          final formattedDate =
+    "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
+                          setState(() {
+                            _borndate = formattedDate;
+                            _model.textController!.text = formattedDate;
+                          });
+                        }
                       },
-                      autofocus: false,
-                      obscureText: false,
                       decoration: InputDecoration(
                         isDense: true,
-                        labelStyle: FlutterFlowTheme.labelMedium.copyWith(
-                          fontFamily: 'Inter',
-                          letterSpacing: 0.0,
-                        ),
                         hintText: 'DD / MM / YYYY',
                         hintStyle: FlutterFlowTheme.labelMedium.copyWith(
                           fontFamily: 'Inter',
@@ -168,31 +179,13 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                           letterSpacing: 0.0,
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Color(0x00000000),
-                            width: 1,
-                          ),
+                          borderSide:
+                              BorderSide(color: Color(0x00000000), width: 1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Color(0x00000000),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: FlutterFlowTheme.error,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: FlutterFlowTheme.error,
-                            width: 1,
-                          ),
+                          borderSide:
+                              BorderSide(color: Color(0x00000000), width: 1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         filled: true,
@@ -206,7 +199,7 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                       cursorColor: FlutterFlowTheme.primaryText,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Porfavor, introduce tu fecha de nacimiento';
+                          return 'Por favor, introduce tu fecha de nacimiento';
                         }
                         return null;
                       },
@@ -219,14 +212,11 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
               Align(
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(45, 10, 0, 0),
+                  padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
                   child: Text(
                     'Tu edad será calculada a partir de esta fecha, y aparecerá públicamente en Swipemeet.',
-                    style: FlutterFlowTheme.labelMedium.copyWith(
-                      fontFamily: 'Inter',
-                      color: FlutterFlowTheme.secondaryText,
-                      letterSpacing: 0.0,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter',
+                      letterSpacing: 0.0,)
                   ),
                 ),
               ),
@@ -237,18 +227,23 @@ class _CompletingProfile2WidgetState extends State<CompletingProfile2Widget> {
                 child: FlutterFlowButton(
                   color: Color(0xFFAB82FF),
                   borderRadius: BorderRadius.circular(25),
-                  width: MediaQuery.of(context).size.width * 0.75, // width of the button
-                  height: MediaQuery.of(context).size.height * 0.07, // width of the button
+                  width: MediaQuery.of(context).size.width *
+                      0.75, // width of the button
+                  height: MediaQuery.of(context).size.height *
+                      0.07, // width of the button
                   onPressed: () async {
                     if (_borndate.isEmpty) {
-                      _showErrorDialog('Por favor, introduce tu fecha de nacimiento');
+                      _showErrorDialog(
+                          'Por favor, introduce tu fecha de nacimiento');
                     }
 
                     if (!isValidDateFormat(_borndate)) {
-                      _showErrorDialog('Por favor, ingresa una fecha válida en formato DD/MM/YYYY');
+                      _showErrorDialog(
+                          'Por favor, ingresa una fecha válida en formato DD/MM/YYYY');
                     } else {
                       // Paso a la siguiente página con GoRoute pasando como parámetros el nombre y fecha de nacimiento
-                      context.go('/completingProfile3Page/${Uri.encodeComponent(widget.name)}/${Uri.encodeComponent(_borndate)}');
+                      context.go(
+                          '/completingProfile3Page/${Uri.encodeComponent(widget.name)}/${Uri.encodeComponent(_borndate)}');
                     }
                   },
                   text: 'CONTINUAR',
