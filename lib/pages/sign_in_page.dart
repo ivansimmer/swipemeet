@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:swipemeet/flutter_flow/flutter_flow_icon_button.dart';
 import 'package:swipemeet/models/flutter_flow_model.dart';
 import 'package:swipemeet/pages/sing_in_page_model.dart';
 
@@ -55,6 +56,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         key: scaffoldKey,
         backgroundColor: FlutterFlowTheme.primaryBackground,
         body: SafeArea(
@@ -62,26 +64,31 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              Align(
-                alignment: AlignmentDirectional(-1, -1),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
-                  child: Text(
-                    'Sign - in',
-                    style: FlutterFlowTheme.headlineSmall.copyWith(
-                      fontFamily: 'Inter Tight',
-                      letterSpacing: 0.0,
-                    ),
+              Row(children: [
+                FlutterFlowIconButton(
+                  // Boton para volver atras
+                  icon: Icons.arrow_back_rounded,
+                  onPressed: () async {
+                    context.goNamed('StartPage');
+                  },
+                ),
+                Align(
+                  alignment: AlignmentDirectional(-1, -1),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(30, 0, 0, 0),
+                    child: Text('Crea tu cuenta',
+                        style: FlutterFlowTheme.tituloPages),
                   ),
                 ),
-              ),
+              ]),
               Align(
+                // Texto de correo
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
                   child: Text(
-                    'Enter your email:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Introduce tu correo:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -89,11 +96,12 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Align(
+                // Input del correo
                 alignment: AlignmentDirectional(0, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                   child: Container(
-                    width: 300,
+                    width: MediaQuery.of(context).size.width * 0.7,
                     child: TextFormField(
                       controller: _model.textFieldEmailTextController,
                       focusNode: _model.textFieldEmailFocusNode,
@@ -106,11 +114,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                           letterSpacing: 0.0,
                         ),
                         alignLabelWithHint: false,
-                        hintText: 'exampleemail@gmail.com',
-                        hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                          fontFamily: 'Inter',
-                          letterSpacing: 0.0,
-                        ),
+                        hintText: 'emailejemplo@gmail.com',
+                        hintStyle: FlutterFlowTheme.introHints,
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: Color(0x00000000),
@@ -142,7 +147,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         filled: true,
                         fillColor: FlutterFlowTheme.secondaryBackground,
                       ),
-                      style: FlutterFlowTheme.bodyMedium.copyWith(
+                      style: FlutterFlowTheme.labelMedium.copyWith(
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
@@ -150,7 +155,7 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                       cursorColor: FlutterFlowTheme.primaryText,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an email';
+                          return 'Por favor, introduce un correo';
                         }
                         return null;
                       },
@@ -159,12 +164,13 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Align(
+                // Texto contraseña
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
-                    'Enter your password:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Introduce tu contraseña:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -172,9 +178,10 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Padding(
+                // Input contraseña
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: 300,
+                  width: MediaQuery.of(context).size.width * 0.7,
                   child: TextFormField(
                     controller: _model.textFieldPasswordTextController,
                     focusNode: _model.textFieldPasswordFocusNode,
@@ -186,11 +193,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'password',
-                      hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        letterSpacing: 0.0,
-                      ),
+                      hintText: 'contraseña',
+                      hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Color(0x00000000),
@@ -235,14 +239,14 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         ),
                       ),
                     ),
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
                     cursorColor: FlutterFlowTheme.primaryText,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
+                        return 'Por favor, introduce una contraseña';
                       }
                       return null;
                     },
@@ -250,12 +254,13 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Align(
+                // Texto confirma contraseña
                 alignment: AlignmentDirectional(-1, 0),
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
                   child: Text(
-                    'Confirm your password:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    'Confirma tu contraseña:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -263,9 +268,10 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Padding(
+                // Input del confirmar contraseña
                 padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                 child: Container(
-                  width: 300,
+                  width: MediaQuery.of(context).size.width * 0.7,
                   child: TextFormField(
                     controller: _model.textFieldConfirmTextController,
                     focusNode: _model.textFieldConfirmFocusNode,
@@ -277,11 +283,8 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         fontFamily: 'Inter',
                         letterSpacing: 0.0,
                       ),
-                      hintText: 'password',
-                      hintStyle: FlutterFlowTheme.labelMedium.copyWith(
-                        fontFamily: 'Inter',
-                        letterSpacing: 0.0,
-                      ),
+                      hintText: 'contraseña',
+                      hintStyle: FlutterFlowTheme.introHints,
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Color(0x00000000),
@@ -326,14 +329,14 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                         ),
                       ),
                     ),
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
                     cursorColor: FlutterFlowTheme.primaryText,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
+                        return 'Por favor, confirma tu contraseña';
                       }
                       return null;
                     },
@@ -341,72 +344,157 @@ class _SignInPageWidgetState extends State<SignInPageWidget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 100, 0, 0),
-                child: Text(
-                  'We will send a text with a verification code.\nMessage and data rates may apply. Learn what\nhappens when your number changes.',
-                  style: FlutterFlowTheme.bodyMedium.copyWith(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    letterSpacing: 0.0,
-                  ),
-                ),
-              ),
-              Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 30, 0, 0),
                   child: FlutterFlowButton(
                     onPressed: () async {
-                      // Check if passwords match
+                      // Estos son los correos que tienen el acceso permitido a swipemeet
+                      final List<String> dominiosPermitidos = [
+                        '@campus.monlau.com',
+                        '@monlau.com',
+                        '@alumnes.ub.edu', // UB
+                        '@upc.edu', // UPC
+                        '@estudiantat.upc.edu', // UPC
+                        '@uab.cat', // UAB
+                        '@e-campus.uab.cat', // UAB
+                        '@upf.edu', // UPF
+                        '@estudiant.upf.edu', // UPF
+                        '@esade.edu', // ESADE
+                        '@salleurl.edu' // LA SALLE
+                      ];
+
+                      // Funcion para devolver diferente mensaje de error en funcion de a que se debe
+                      String getFirebaseErrorMessage(String code) {
+                        switch (code) {
+                          case 'email-already-in-use':
+                            return 'Este correo ya está en uso. Intenta con otro.';
+                          case 'invalid-email':
+                            return 'El correo no es válido.';
+                          case 'weak-password':
+                            return 'La contraseña es muy débil. Usa al menos 6 caracteres.';
+                          case 'operation-not-allowed':
+                            return 'Esta operación no está permitida. Contacta al soporte.';
+                          default:
+                            return 'Rellena todos los campos correctamente.';
+                        }
+                      }
+
+                      // Comprobacion de que ambas contraseñas sean iguales
                       if (_model.textFieldPasswordTextController?.text !=
                           _model.textFieldConfirmTextController?.text) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Passwords don\'t match!'),
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            // Si no son iguales muestro alerta con mensaje de error
+                            title: Text('Error'),
+                            content: Text('¡Las contraseñas no coinciden!'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
                           ),
                         );
                         return;
                       }
 
+                      // Guardo el email
+                      final email = _model.textFieldEmailTextController!.text
+                          .trim()
+                          .toLowerCase();
+
+                      // Comprobacion de que el correo esta entre los permitidos
+                      bool emailPermitido = dominiosPermitidos.any(
+                        (dominio) => email.endsWith(dominio.toLowerCase()),
+                      );
+
+                      // Si no esta permitido muestro alerta con menasaje de error
+                      if (!emailPermitido) {
+                        debugPrint(
+                            'Correo no permitido, cancelando creación de cuenta');
+
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Correo no permitido'),
+                            content: Text(
+                                'Solo se permiten correos con dominios autorizados.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Si lo anterior ha pasado las comprobaciones, creo el usuario con email y contraseña
                       try {
-                        // Firebase Authentication: Create account with email and password
                         final userCredential = await FirebaseAuth.instance
                             .createUserWithEmailAndPassword(
-                          email: _model.textFieldEmailTextController!.text,
-                          password: _model.textFieldPasswordTextController!.text,
+                          email: email, // pongo el email que he recogido antes
+                          password: _model.textFieldPasswordTextController!
+                              .text, // recojo el texto de la contraseña del campo input
                         );
 
-                        // You can access the user using userCredential.user
                         final user = userCredential.user;
 
                         if (user != null) {
-                          // Account successfully created, navigate to the next page
-                          context.goNamed('CompletingProfile1Page');
+                          context.goNamed(
+                              'CompletingProfile1Page'); // Si todo sale bien paso a la pantalla de completar el perfil
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('Failed to create account.')),
+                          showDialog(
+                            // En caso de no salir bien, muestro una alerta de error al crear la cuenta
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Error al crear cuenta'),
+                              content: Text(
+                                  'No se pudo crear la cuenta. Intenta nuevamente.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('OK'),
+                                ),
+                              ],
+                            ),
                           );
                         }
                       } catch (e) {
-                        // Handle any errors from Firebase (e.g. network issues, invalid email format)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Error creating account: $e'),
+                        String errorMsg = 'Ocurrió un error.';
+                        if (e is FirebaseAuthException) {
+                          errorMsg = getFirebaseErrorMessage(e.code);
+                        }
+
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text('Error al crear cuenta'),
+                            content: Text(errorMsg),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('OK'),
+                              ),
+                            ],
                           ),
                         );
                       }
                     },
-                    text: 'CONTINUE',
-                    width: 300, // width of the button
-                    height: 40, // height of the button
+                    text: 'CONTINUAR',
+                    width: MediaQuery.of(context).size.width *
+                        0.7, // width of the button
+                    height: MediaQuery.of(context).size.height *
+                        0.07, // height of the button
                     padding: EdgeInsetsDirectional.fromSTEB(
                         16, 0, 16, 0), // padding inside the button
                     iconPadding: EdgeInsetsDirectional.fromSTEB(
                         0, 0, 0, 0), // icon padding
                     color: Color(0xFFAB82FF), // background color of the button
                     elevation: 0, // elevation of the button
-                    borderRadius: BorderRadius.circular(20), // border radius
-                  )
-                ),
+                    borderRadius: BorderRadius.circular(25), // border radius
+                  )),
             ],
           ),
         ),

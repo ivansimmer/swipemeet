@@ -1,13 +1,13 @@
-// user_profile.dart
-
 class UserProfile {
   String email;
   String name;
   String bornDate;
   String university;
   String studies;
-  String
-      pictureUrl; // Esta es la imagen del perfil, puede ser por defecto o personalizada
+  String ubicacion;
+  List<String> intereses;
+  String pictureUrl;
+  List<String> connections;
 
   // Constructor
   UserProfile({
@@ -16,8 +16,10 @@ class UserProfile {
     required this.bornDate,
     required this.university,
     required this.studies,
-    this.pictureUrl =
-        'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png', // Imagen por defecto
+    required this.ubicacion,
+    required this.intereses,
+    required this.connections,
+    this.pictureUrl = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png', // Imagen por defecto
   });
 
   // Método para convertir el objeto a un mapa para guardarlo en Firestore
@@ -28,6 +30,9 @@ class UserProfile {
       'born_date': bornDate,
       'university': university,
       'studies': studies,
+      'ubicacion': ubicacion,
+      'intereses': intereses,
+      'connections': connections,
       'picture': pictureUrl,
     };
   }
@@ -40,7 +45,10 @@ class UserProfile {
       bornDate: map['born_date'],
       university: map['university'],
       studies: map['studies'],
-      pictureUrl: map['picture'], // Asegúrate de usar 'picture' para la clave
+      ubicacion: map['ubicacion'],
+      intereses: map['intereses'],
+      connections: map['connections'],
+      pictureUrl: map['picture'],
     );
   }
 }

@@ -6,7 +6,6 @@ import 'package:swipemeet/pages/user_profile.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -16,7 +15,10 @@ export 'completing_profile3_model.dart';
 class CompletingProfile3Widget extends StatefulWidget {
   final String name;
   final String borndate;
-  const CompletingProfile3Widget({super.key, required this.name, required this.borndate});
+  const CompletingProfile3Widget(
+      {super.key,
+      required this.name,
+      required this.borndate});
 
   static String routeName = 'CompletingProfile3';
   static String routePath = '/completingProfile3';
@@ -40,6 +42,10 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
     super.initState();
     _model =
         FlutterFlowModel.createModel(context, () => CompletingProfile3Model());
+
+    // Inicializa los valores predeterminados para los dropdowns
+    _model.dropDownValue1 = 'Monlau Centre d\'Estudis'; // Valor predeterminado
+    _model.dropDownValue2 = 'Ciencias'; // Valor predeterminado
   }
 
   @override
@@ -52,7 +58,7 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
   Widget build(BuildContext context) {
     _name = widget.name;
     _bornDate = widget.borndate;
-    
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -66,13 +72,15 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              LinearPercentIndicator( // Barra de progreso header
+              LinearPercentIndicator(
+                // Barra de progreso header
                 percent: 0.75,
-                width: 400,
+                width: MediaQuery.of(context).size.width *
+                    1, // width of the button
                 lineHeight: 12,
                 animation: true,
                 animateFromLastPercent: true,
-                progressColor: Color(0xFFAB82FF),
+                progressColor: const Color(0xFFAB82FF),
                 backgroundColor: FlutterFlowTheme.alternate,
                 center: Text(
                   '\n',
@@ -84,12 +92,13 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 padding: EdgeInsets.zero,
               ),
               Align(
-                alignment: AlignmentDirectional(-1, 0),
+                alignment: const AlignmentDirectional(-1, 0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
-                  child: Text( // Texto subtitulo
-                    'Your student profile:',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                  padding: const EdgeInsetsDirectional.fromSTEB(30, 50, 0, 0),
+                  child: Text(
+                    // Texto subtitulo
+                    'Tu perfil de estudiante:',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       fontSize: 30,
                       letterSpacing: 0.0,
@@ -99,12 +108,13 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(-1, 0),
+                alignment: const AlignmentDirectional(-1, 0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
-                  child: Text( // Texto escuela
-                    'Where do you study?',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                  padding: const EdgeInsetsDirectional.fromSTEB(30, 30, 0, 0),
+                  child: Text(
+                    // Texto escuela
+                    '¿Donde estudias?',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -112,15 +122,18 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                child: FlutterFlowDropDown( // Dropdown escuelas
-                  items: ['Monlau Centre d\'Estudis', 'UOC', 'UB'],
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                child: FlutterFlowDropDown(
+                  // Dropdown escuelas
+                  items: const ['Monlau Centre d\'Estudis', 'UPC', 'UB', 'UPF', 'UAB', 'ESADE', 'LA SALLE'],
                   selectedItem: _model.dropDownValue1,
                   onChanged: (val) =>
                       setState(() => _model.dropDownValue1 = val),
-                  width: 300,
-                  height: 40,
-                  textStyle: FlutterFlowTheme.bodyMedium.copyWith(
+                  width: MediaQuery.of(context).size.width *
+                      0.75, // width of the button
+                  height: MediaQuery.of(context).size.height *
+                      0.07, // width of the button
+                  textStyle: FlutterFlowTheme.labelMedium.copyWith(
                     fontFamily: 'Inter',
                     letterSpacing: 0.0,
                   ),
@@ -133,9 +146,9 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                   fillColor: FlutterFlowTheme.secondaryBackground,
                   elevation: 2,
                   borderColor: Colors.black,
-                  borderWidth: 0,
+                  borderWidth: 1,
                   borderRadius: 25,
-                  margin: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+                  margin: const EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
                   hidesUnderline: true,
                   isOverButton: false,
                   isSearchable: false,
@@ -143,12 +156,13 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 ),
               ),
               Align(
-                alignment: AlignmentDirectional(-1, 0),
+                alignment: const AlignmentDirectional(-1, 0),
                 child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(30, 60, 0, 0),
-                  child: Text( // Texto estudios
-                    'What are you studying?',
-                    style: FlutterFlowTheme.bodyMedium.copyWith(
+                  padding: const EdgeInsetsDirectional.fromSTEB(30, 60, 0, 0),
+                  child: Text(
+                    // Texto estudios
+                    '¿En que area de estudios te encuentras?',
+                    style: FlutterFlowTheme.labelMedium.copyWith(
                       fontFamily: 'Inter',
                       letterSpacing: 0.0,
                     ),
@@ -156,15 +170,18 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                child: FlutterFlowDropDown( // Dropdown estudios
-                  items: ['CFGS DAM', 'Computer Science', 'CFGS DAW'],
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                child: FlutterFlowDropDown(
+                  // Dropdown estudios
+                  items: const ['Ciencias', 'Informatica', 'Ciencias Sociales', 'Matematicas', 'Ciencias de la Salud', 'Humanidades', 'Ingenieria', 'Economia', 'Artes', 'Otro'],
                   selectedItem: _model.dropDownValue2,
                   onChanged: (val) =>
                       setState(() => _model.dropDownValue2 = val),
-                  width: 300,
-                  height: 40,
-                  textStyle: FlutterFlowTheme.bodyMedium.copyWith(
+                  width: MediaQuery.of(context).size.width *
+                      0.75, // width of the button
+                  height: MediaQuery.of(context).size.height *
+                      0.07, // width of the button
+                  textStyle: FlutterFlowTheme.labelMedium.copyWith(
                     fontFamily: 'Inter',
                     letterSpacing: 0.0,
                   ),
@@ -177,9 +194,9 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                   fillColor: FlutterFlowTheme.secondaryBackground,
                   elevation: 2,
                   borderColor: Colors.black,
-                  borderWidth: 0,
+                  borderWidth: 1,
                   borderRadius: 25,
-                  margin: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+                  margin: const EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
                   hidesUnderline: true,
                   isOverButton: false,
                   isSearchable: false,
@@ -187,19 +204,33 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                 ),
               ),
               Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0, 200, 0, 0),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 100, 0, 0),
                 child: FlutterFlowButton(
+                  color: const Color(0xFFAB82FF),
+                  borderRadius: BorderRadius.circular(25),
+                  width: MediaQuery.of(context).size.width *
+                      0.75, // width of the button
+                  height: MediaQuery.of(context).size.height *
+                      0.07, // width of the button
                   onPressed: () async {
                     // Asegurar de que el usuario esta autenticado
                     User? currentUser = FirebaseAuth.instance.currentUser;
                     if (currentUser != null) {
                       // Crear el perfil del usuario
                       UserProfile userProfile = UserProfile(
-                        email: currentUser.email ?? '', // Cojo el email del signin
-                        name: _name ?? 'Unknown', // Pongo el nombre que paso de las paginas anteriores, si no hay pongo Unknown
-                        bornDate: _bornDate ?? 'Unknown', // Pongo la fecha de nacimiento pasada de la anterior, si no pongo Unknown
-                        university: _model.dropDownValue1 ?? 'Unknown', // Asigno el valor que se escoge en el dropdown de escuelas
-                        studies: _model.dropDownValue2 ?? 'Unknown', // Asigno el valor que se escoge en el dropdown de estudios
+                        email:
+                            currentUser.email ?? '', // Cojo el email del signin
+                        name: _name ??
+                            'Unknown', // Pongo el nombre que paso de las paginas anteriores, si no hay pongo Unknown
+                        bornDate: _bornDate ??
+                            'Unknown', // Pongo la fecha de nacimiento pasada de la anterior, si no pongo Unknown
+                        university: _model.dropDownValue1 ??
+                            'Unknown', // Asigno el valor que se escoge en el dropdown de escuelas
+                        studies: _model.dropDownValue2 ??
+                            'Unknown', // Asigno el valor que se escoge en el dropdown de estudios
+                        ubicacion: 'Ubicacion Desconocida',
+                        intereses: [],
+                        connections: [],
                         pictureUrl:
                             'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png', // Imagen fija por ahora
                       );
@@ -213,12 +244,24 @@ class _CompletingProfile3WidgetState extends State<CompletingProfile3Widget> {
                       // Navegar a la pagina principal
                       context.goNamed('HomePage');
                     } else {
-                      // Si el usuario no está autenticado, muestra un mensaje de error
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Error: Usuario no autenticado')));
+                      // Mostrar alerta personalizada si no hay usuario autenticado
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Error de autenticación'),
+                          content: const Text(
+                              'No se ha encontrado un usuario autenticado. Por favor, inicia sesión e intenta de nuevo.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Aceptar'),
+                            ),
+                          ],
+                        ),
+                      );
                     }
                   },
-                  text: 'CONTINUE',
+                  text: 'CONTINUAR',
                 ),
               ),
             ],
