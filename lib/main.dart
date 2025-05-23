@@ -1,6 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:swipemeet/auth/firebase_auth/auth_check.dart';
@@ -181,28 +182,26 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
-  path: '/marketplacePage',
-  name: 'MarketplacePage',
-  pageBuilder: (context, state) {
-    final extra = state.extra as Map<String, dynamic>? ?? {};
-    final profileImageUrl = extra['profileImageUrl'] ??
-        'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
+      path: '/marketplacePage',
+      name: 'MarketplacePage',
+      pageBuilder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        final profileImageUrl = extra['profileImageUrl'] ??
+            'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg';
 
-    return CustomTransitionPage(
-      key: state.pageKey,
-      child: MarketplacePage(profileImageUrl: profileImageUrl),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-    );
-  },
-),
-GoRoute(
-  name: 'AddProductPage',
-  path: '/addProductPage',
-  builder: (context, state) => const AddProductPage(),
-),
-
-
-    
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: MarketplacePage(profileImageUrl: profileImageUrl),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              child,
+        );
+      },
+    ),
+    GoRoute(
+      name: 'AddProductPage',
+      path: '/addProductPage',
+      builder: (context, state) => const AddProductPage(),
+    ),
   ],
 );
 
@@ -246,6 +245,16 @@ class MyApp extends StatelessWidget {
                   ),
             ),
             themeMode: ThemeMode.system,
+
+            // 🔽 Agrega esto
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('es', ''),
+            ],
           );
         },
       ),
