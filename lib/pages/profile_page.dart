@@ -61,6 +61,14 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
     super.dispose();
   }
 
+  // MÉTODO AÑADIDO: Cerrar sesión
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      context.goNamed('StartPage');
+    }
+  }
+
   void _showImageDialog(BuildContext context, String url) {
     showDialog(
       context: context,
@@ -94,11 +102,14 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
 
   Future<void> _loadUserData() async {
     setState(() => isLoading = true);
-    final userId = widget.uid ?? FirebaseAuth.instance.currentUser?.uid;  
+    final userId = widget.uid ?? FirebaseAuth.instance.currentUser?.uid;
 
     if (userId != null) {
       try {
-        final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
         if (doc.exists) {
           setState(() {
             name = doc['name'] ?? '';
@@ -159,15 +170,15 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
         context.goNamed('CommunitiesPage');
         break;
       case 3:
-      context.goNamed(
-        'MarketplacePage',
-        extra: {
-          'profileImageUrl': picture.isNotEmpty
-              ? picture
-              : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
-        },
-      );
-      break;  
+        context.goNamed(
+          'MarketplacePage',
+          extra: {
+            'profileImageUrl': picture.isNotEmpty
+                ? picture
+                : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+          },
+        );
+        break;
       case 4:
         context.goNamed('ProfilePage');
         break;
@@ -549,19 +560,40 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
                           }
                         },
                       ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // Acción del botón
+                            _signOut();
+                          },
+                          label: Text("Cerrar sesion"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            textStyle: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
               ),
             ),
       bottomNavigationBar: CustomNavBar(
-  currentIndex: _selectedIndex,
-  onTap: _onNavItemTapped,
-  profileImageUrl: picture.isNotEmpty
-      ? picture
-      : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
-),
-
+        currentIndex: _selectedIndex,
+        onTap: _onNavItemTapped,
+        profileImageUrl: picture.isNotEmpty
+            ? picture
+            : 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg',
+      ),
     );
   }
 

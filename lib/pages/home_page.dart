@@ -779,7 +779,7 @@ return results;
                     ),
                   ),
             Positioned(
-              bottom: 20,
+              bottom: 10,
               left: 0,
               right: 0,
               child: _buildBottomControls(),
@@ -803,9 +803,9 @@ return results;
     final isConnected = profiles[_currentPage]['isConnected'] ?? false;
 
     return Align(
-      alignment: Alignment.bottomCenter,
+      alignment: Alignment.bottomRight,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.only(bottom: 55, right: 50),
         child: AnimatedScale(
           scale: _model.matchScale,
           duration: const Duration(milliseconds: 250),
@@ -886,7 +886,7 @@ return results;
             children: [
               SizedBox(
                 width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.73,
+                height: MediaQuery.of(context).size.height * 0.79,
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
@@ -897,21 +897,12 @@ return results;
                 ),
               ),
               Positioned(
-                bottom: 20,
-                left: 0,
+                bottom: 30,
+                left: 20,
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.7),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
+                  
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

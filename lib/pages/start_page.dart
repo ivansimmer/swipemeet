@@ -61,13 +61,13 @@ class _StartPageWidgetState extends State<StartPageWidget> {
                   Align(
                     alignment: AlignmentDirectional(0, 0),
                     child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(0, 120, 0, 0),
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 150, 0, 0),
                         child: Image.asset('assets/icon-app.png', width: 200,)),
                   ),
                   Align(
                     alignment: AlignmentDirectional(0, 0),
                     child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(50, 20, 50, 0),
+                      padding: EdgeInsetsDirectional.fromSTEB(50, 50, 50, 0),
                       child: Text(
                         'Clicando Crear Cuenta o Iniciar Sesion aceptas nuestras condiciones. Comprueba como procesamos tu informacion en nuestra Politica de Privacidad.',
                         textAlign: TextAlign.start,
